@@ -7,11 +7,9 @@ import { Progress } from '@/components/ui/progress';
 import type { User } from '@/types';
 import {
   ArrowUpRight,
-  BarChart3,
   CheckCircle,
   Key,
   TrendingUp,
-  Zap,
   RefreshCw,
   Globe,
   Server,
