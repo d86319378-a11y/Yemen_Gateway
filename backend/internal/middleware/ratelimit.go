@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -8,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
+
 	"yemenapi/internal/config"
 	"yemenapi/pkg/logger"
 )
@@ -27,21 +30,21 @@ func NewRateLimiter(redis *redis.Client, cfg *config.RateLimitConfig) *RateLimit
 func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := rl.getKey(c)
-		
+
 		ctx := c.Request.Context()
-		
+
 		// Check current count
 		count, err := rl.redis.Get(ctx, key).Int()
 		if err != nil && err != redis.Nil {
-			logger.Error("rate limiter redis error", logger.With()...)
+			logger.Error("rate limiter redis error", zap.Error(err))
 			c.Next()
 			return
 		}
 
 		if count >= rl.config.Requests {
 			c.JSON(http.StatusTooManyRequests, gin.H{
-				"success": false,
-				"error":   fmt.Sprintf("Rate limit exceeded. Maximum %d requests per %d seconds.", rl.config.Requests, rl.config.Window),
+				"success":     false,
+				"error":       fmt.Sprintf("Rate limit exceeded. Maximum %d requests per %d seconds.", rl.config.Requests, rl.config.Window),
 				"retry_after": rl.getRetryAfter(ctx, key),
 			})
 			c.Abort()
@@ -50,14 +53,14 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 
 		// Increment counter
 		pipe := rl.redis.Pipeline()
-		incr := pipe.Incr(ctx, key)
+		pipe.Incr(ctx, key)
 		pipe.Expire(ctx, key, time.Duration(rl.config.Window)*time.Second)
 		_, _ = pipe.Exec(ctx)
 
 		// Set headers
 		c.Header("X-RateLimit-Limit", strconv.Itoa(rl.config.Requests))
 		c.Header("X-RateLimit-Remaining", strconv.Itoa(rl.config.Requests-count-1))
-		
+
 		c.Next()
 	}
 }
@@ -65,9 +68,9 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 func (rl *RateLimiter) MiddlewareByKey(limit int, window int) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := "rate_limit:key:" + c.GetString("api_key_id")
-		
+
 		ctx := c.Request.Context()
-		
+
 		count, err := rl.redis.Get(ctx, key).Int()
 		if err != nil && err != redis.Nil {
 			c.Next()
@@ -105,5 +108,11 @@ func (rl *RateLimiter) getRetryAfter(ctx context.Context, key string) int {
 	if err != nil {
 		return rl.config.Window
 	}
-	return int(ttl.Seconds())
+
+	seconds := int(ttl.Seconds())
+	if seconds < 0 {
+		return rl.config.Window
+	}
+
+	return seconds
 }
