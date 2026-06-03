@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
+
 	"yemenapi/internal/config"
 	"yemenapi/internal/database"
 	"yemenapi/internal/domain"
@@ -57,16 +58,16 @@ func main() {
 	cfg := config.Load()
 
 	if err := database.Connect(&cfg.Database); err != nil {
-		logger.Fatal("failed to connect to database", logger.With()...)
+		logger.Fatal("failed to connect to database")
 	}
 	defer database.Close()
 
 	if err := database.Migrate(); err != nil {
-		logger.Fatal("failed to run migrations", logger.With()...)
+		logger.Fatal("failed to run migrations")
 	}
 
 	if err := database.Seed(); err != nil {
-		logger.Warn("failed to seed database", logger.With()...)
+		logger.Warn("failed to seed database")
 	}
 
 	redisClient := redis.NewClient(&redis.Options{
@@ -79,13 +80,14 @@ func main() {
 	defer cancel()
 
 	if err := redisClient.Ping(ctx).Err(); err != nil {
-		logger.Warn("failed to connect to redis, continuing without caching", logger.With()...)
+		logger.Warn("failed to connect to redis, continuing without caching")
 		redisClient = nil
 	} else {
 		logger.Info("connected to redis")
 	}
 
 	db := database.GetDB()
+
 	userRepo := repository.NewUserRepository(db)
 	keyRepo := repository.NewAPIKeyRepository(db)
 	planRepo := repository.NewPlanRepository(db)
@@ -96,6 +98,7 @@ func main() {
 	webhookRepo := repository.NewWebhookRepository(db)
 
 	authMiddleware := middleware.NewAuthMiddleware(&cfg.JWT, userRepo, keyRepo)
+
 	var rateLimiter *middleware.RateLimiter
 	if redisClient != nil {
 		rateLimiter = middleware.NewRateLimiter(redisClient, &cfg.Rate)
@@ -120,6 +123,7 @@ func main() {
 
 	r := gin.New()
 	r.Use(gin.Recovery())
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -147,15 +151,18 @@ func main() {
 			}
 			_ = path
 
-			logger.Info("HTTP Request", logger.With()...)
+			logger.Info("HTTP Request")
 
 			if userID, exists := c.Get("user_id"); exists {
 				uid, err := ParseUUID(userID.(string))
 				if err == nil {
-					var keyID *string
+					var keyID *uuid.UUID
+
 					if kid, ok := c.Get("api_key_id"); ok {
-						kidStr := kid.(string)
-						keyID = &kidStr
+						kidUUID, err := uuid.Parse(kid.(string))
+						if err == nil {
+							keyID = &kidUUID
+						}
 					}
 
 					log := &domain.RequestLog{
@@ -193,44 +200,41 @@ func main() {
 		go func() {
 			metricsRouter := gin.New()
 			metricsRouter.GET("/metrics", gin.WrapH(promhttp.Handler()))
-			logger.Info("metrics server starting", logger.With()...)
+
+			logger.Info("metrics server starting")
+
 			if err := metricsRouter.Run(":" + cfg.Metrics.Port); err != nil {
-				logger.Error("metrics server failed", logger.With()...)
+				logger.Error("metrics server failed")
 			}
 		}()
 	}
 
 	v1 := r.Group("/api/v1")
 
-	// Public invoice QR info
 	v1.GET("/invoices/:id/qr", invoicingHandler.InvoiceQRInfo)
 
-	// Auth
 	auth := v1.Group("/auth")
 	{
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
 	}
 
-	// JWT protected
 	protected := v1.Group("")
 	protected.Use(authMiddleware.JWTAuth())
 	{
 		protected.GET("/auth/me", authHandler.Me)
+
 		protected.GET("/billing/plans", billingHandler.ListPlans)
 		protected.GET("/billing/usage", billingHandler.GetUsage)
 		protected.GET("/billing/invoices", billingHandler.GetInvoices)
 
-		// Invoicing stats
 		protected.GET("/invoicing/stats", statsHandler.GetDashboardStats)
 
-		// Webhook management
 		protected.POST("/webhooks", webhookHandler.Create)
 		protected.GET("/webhooks", webhookHandler.List)
 		protected.DELETE("/webhooks/:id", webhookHandler.Delete)
 	}
 
-	// API Key protected
 	api := v1.Group("")
 	api.Use(authMiddleware.APIKeyAuth())
 	{
@@ -238,52 +242,43 @@ func main() {
 			api.Use(rateLimiter.Middleware())
 		}
 
-		// Currency
 		api.GET("/currency/rates", currencyHandler.GetAllRates)
 		api.GET("/currency/usd", currencyHandler.GetUSDRate)
 		api.GET("/currency/sar", currencyHandler.GetSARRate)
 		api.GET("/currency/history", currencyHandler.GetHistory)
 		api.GET("/currency/convert", currencyHandler.Convert)
 
-		// Phone
 		api.POST("/phone/verify", phoneHandler.Verify)
 		api.POST("/phone/check", phoneHandler.Check)
 
-		// SMS
 		api.POST("/sms/send", smsHandler.Send)
 		api.POST("/sms/bulk", smsHandler.Bulk)
 		api.POST("/sms/status", smsHandler.Status)
 
-		// Wallet
 		api.GET("/wallets", walletHandler.List)
 		api.GET("/wallets/providers", walletHandler.Providers)
 		api.GET("/wallets/status", walletHandler.Status)
 
-		// Payment
 		api.POST("/payments", paymentHandler.Create)
 		api.POST("/payments/verify", paymentHandler.Verify)
 		api.POST("/payments/refund", paymentHandler.Refund)
 
-		// Yemen Invoicing Gateway
 		api.POST("/invoices", invoicingHandler.CreateInvoice)
 		api.GET("/invoices", invoicingHandler.ListInvoices)
 		api.GET("/invoices/:id", invoicingHandler.GetInvoice)
 		api.PUT("/invoices/:id/status", invoicingHandler.UpdateInvoiceStatus)
 
-		// Vouchers
 		api.POST("/vouchers", invoicingHandler.CreateVoucher)
-		api.POST("/receipts", invoicingHandler.CreateVoucher) // alias with type=receipt
+		api.POST("/receipts", invoicingHandler.CreateVoucher)
 		api.GET("/vouchers", invoicingHandler.ListVouchers)
-		api.POST("/payment-vouchers", invoicingHandler.CreateVoucher) // alias with type=payment
+		api.POST("/payment-vouchers", invoicingHandler.CreateVoucher)
 
-		// Manual payments
 		api.POST("/payment-submissions", invoicingHandler.SubmitManualPayment)
 		api.POST("/manual-payments", invoicingHandler.SubmitManualPayment)
 	}
 
 	v1.POST("/payments/webhook/:provider", paymentHandler.Webhook)
 
-	// Analytics
 	analytics := v1.Group("/analytics")
 	analytics.Use(authMiddleware.JWTAuth())
 	{
@@ -292,7 +287,6 @@ func main() {
 		analytics.GET("/dashboard", analyticsHandler.Dashboard)
 	}
 
-	// Admin
 	admin := v1.Group("/admin")
 	admin.Use(authMiddleware.JWTAuth())
 	admin.Use(authMiddleware.AdminOnly())
@@ -301,6 +295,7 @@ func main() {
 		admin.PUT("/users/:id/status", adminHandler.UpdateUserStatus)
 		admin.GET("/errors", adminHandler.GetErrors)
 		admin.GET("/stats", adminHandler.GetStats)
+
 		admin.GET("/manual-payments", invoicingHandler.AdminListPaymentProofs)
 		admin.GET("/payment-submissions", invoicingHandler.AdminListPaymentProofs)
 		admin.PUT("/manual-payments/:id/review", invoicingHandler.AdminReviewPaymentProof)
@@ -313,9 +308,10 @@ func main() {
 	}
 
 	go func() {
-		logger.Info("server starting", logger.With()...)
+		logger.Info("server starting")
+
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Fatal("server failed to start", logger.With()...)
+			logger.Fatal("server failed to start")
 		}
 	}()
 
@@ -329,7 +325,7 @@ func main() {
 	defer shutdownCancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		logger.Fatal("server forced to shutdown", logger.With()...)
+		logger.Fatal("server forced to shutdown")
 	}
 
 	logger.Info("server exited")
