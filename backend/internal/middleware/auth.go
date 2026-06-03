@@ -7,22 +7,22 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+
 	"yemenapi/internal/config"
 	"yemenapi/internal/repository"
-	
 )
 
 type AuthMiddleware struct {
-	jwtConfig   *config.JWTConfig
-	userRepo    *repository.UserRepository
-	keyRepo     *repository.APIKeyRepository
+	jwtConfig *config.JWTConfig
+	userRepo  *repository.UserRepository
+	keyRepo   *repository.APIKeyRepository
 }
 
 func NewAuthMiddleware(cfg *config.JWTConfig, userRepo *repository.UserRepository, keyRepo *repository.APIKeyRepository) *AuthMiddleware {
 	return &AuthMiddleware{
-		jwtConfig:   cfg,
-		userRepo:    userRepo,
-		keyRepo:     keyRepo,
+		jwtConfig: cfg,
+		userRepo:  userRepo,
+		keyRepo:   keyRepo,
 	}
 }
 
@@ -102,7 +102,6 @@ func (am *AuthMiddleware) APIKeyAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Update last used
 		_ = am.keyRepo.UpdateLastUsed(key.ID.String())
 
 		c.Set("api_key_id", key.ID.String())
