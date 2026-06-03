@@ -48,8 +48,8 @@ interface Invoice {
   items: InvoiceItem[];
 }
 
-function getToken() {
-  return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '';
+function getApiKey() {
+  return localStorage.getItem('yg_api_key') || '';
 }
 
 export default function InvoicesPage() {
@@ -69,7 +69,7 @@ export default function InvoicesPage() {
     try {
       setLoading(true);
       const url = `${API_BASE_URL}/api/v1/invoices${filterStatus ? `?status=${filterStatus}` : ''}`;
-      const res = await fetch(url, { headers: { 'X-API-Key': getToken() } });
+      const res = await fetch(url, { headers: { 'X-API-Key': getApiKey() } });
       const data = await res.json();
       if (data.success) setInvoices(data.data || []);
     } catch (e) { console.error(e); }
@@ -80,7 +80,7 @@ export default function InvoicesPage() {
     const payload = { ...form, items };
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': getToken() },
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': getApiKey() },
       body: JSON.stringify(payload),
     });
     const data = await res.json();
