@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"yemenapi/internal/config"
 	"yemenapi/internal/repository"
-	"yemenapi/pkg/logger"
+	
 )
 
 type AuthMiddleware struct {
