@@ -137,6 +137,9 @@ export default function ApiKeysPage() {
       }
 
       setCreatedKey(result.data.key || null);
+      if (result.data.key) {
+  localStorage.setItem('yg_api_key', result.data.key);
+}
       setKeys((prev) => [result.data as BackendApiKey, ...prev]);
       setNewKeyName('');
     } catch (err) {
