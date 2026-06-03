@@ -113,6 +113,7 @@ func main() {
 	analyticsHandler := handlers.NewAnalyticsHandler(logRepo)
 	adminHandler := handlers.NewAdminHandler(userRepo, keyRepo, logRepo)
 	billingHandler := handlers.NewBillingHandler(planRepo)
+	apiKeyHandler := handlers.NewAPIKeyHandler(keyRepo)
 	invoicingHandler := handlers.NewInvoicingHandlerWithWebhooks(invoicingRepo, webhookRepo)
 	webhookHandler := handlers.NewWebhookHandler(webhookRepo)
 	statsHandler := handlers.NewStatsHandler(invoicingRepo, logRepo)
@@ -223,6 +224,9 @@ func main() {
 	protected.Use(authMiddleware.JWTAuth())
 	{
 		protected.GET("/auth/me", authHandler.Me)
+		protected.GET("/keys", apiKeyHandler.List)
+protected.POST("/keys", apiKeyHandler.Create)
+protected.DELETE("/keys/:id", apiKeyHandler.Delete)
 
 		protected.GET("/billing/plans", billingHandler.ListPlans)
 		protected.GET("/billing/usage", billingHandler.GetUsage)
