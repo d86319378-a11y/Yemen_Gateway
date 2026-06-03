@@ -1,0 +1,148 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Yemen API Gateway - Overview",
+    "tags": ["yemenapi", "api", "gateway"],
+    "timezone": "UTC",
+    "schemaVersion": 38,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Requests (24h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(http_requests_total[24h]))",
+            "legendFormat": "Requests"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": { "mode": "fixed", "fixedColor": "red" }
+          }
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Active Users",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "yemenapi_active_users",
+            "legendFormat": "Users"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": { "mode": "fixed", "fixedColor": "green" }
+          }
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Error Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{status=~\"4..|5..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100",
+            "legendFormat": "Error %"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": { "mode": "thresholds" },
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0}
+      },
+      {
+        "id": 4,
+        "title": "Avg Response Time",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+            "legendFormat": "P95 (ms)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms",
+            "color": { "mode": "fixed", "fixedColor": "blue" }
+          }
+        },
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0}
+      },
+      {
+        "id": 5,
+        "title": "Requests Per Minute",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m])) * 60",
+            "legendFormat": "Requests/min"
+          }
+        ],
+        "yAxes": [{"format": "short"}],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4}
+      },
+      {
+        "id": 6,
+        "title": "Response Time Distribution",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) * 1000",
+            "legendFormat": "P99"
+          }
+        ],
+        "yAxes": [{"format": "ms"}],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4}
+      },
+      {
+        "id": 7,
+        "title": "Endpoint Usage",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (handler) (increase(http_requests_total[24h]))",
+            "legendFormat": "{{handler}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12}
+      },
+      {
+        "id": 8,
+        "title": "Status Code Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (status_code) (increase(http_requests_total[24h]))",
+            "legendFormat": "{{status_code}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12}
+      }
+    ]
+  }
+}

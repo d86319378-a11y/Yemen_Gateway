@@ -1,0 +1,66 @@
+services:
+  - type: web
+    name: yemen-gateway-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./docker/Dockerfile
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /health
+    envVars:
+      - key: SERVER_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: yemen-gateway-db
+          property: connectionString
+      - key: DATABASE_SSLMODE
+        value: require
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: yemen-gateway-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRY
+        value: 24h
+      - key: JWT_REFRESH_EXPIRY
+        value: 168h
+      - key: RATE_LIMIT_REQUESTS
+        value: 100
+      - key: RATE_LIMIT_WINDOW
+        value: 60
+      - key: METRICS_ENABLED
+        value: false
+    disk:
+      name: yemen-gateway-storage
+      mountPath: /app/storage
+      sizeGB: 1
+
+  - type: web
+    name: yemen-gateway-app
+    runtime: static
+    rootDir: app
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://yemen-gateway-api.onrender.com
+    routes:
+      - type: rewrite
+        source: "/*"
+        destination: /index.html
+
+  - type: keyvalue
+    name: yemen-gateway-redis
+    plan: free
+    region: frankfurt
+    ipAllowList: []
+
+databases:
+  - name: yemen-gateway-db
+    databaseName: yemenapi_db
+    user: yemenapi
+    plan: free
+    region: frankfurt
