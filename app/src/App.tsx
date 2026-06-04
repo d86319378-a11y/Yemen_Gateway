@@ -13,12 +13,12 @@ import SettingsPage from '@/pages/Settings';
 import BillingPage from '@/pages/Billing';
 import AdminPage from '@/pages/Admin';
 import InvoicesPage from '@/pages/Invoices';
+import CustomersPage from '@/pages/Customers';
 import ReceiptsPage from '@/pages/Receipts';
 import PaymentVouchersPage from '@/pages/PaymentVouchers';
 import PaymentsPage from '@/pages/Payments';
 import DevelopersPage from '@/pages/Developers';
 import AdminPaymentsPage from '@/pages/AdminPayments';
-import CustomersPage from '@/pages/Customers';
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
@@ -61,9 +61,9 @@ function ProtectedRoute({
 const dashboardRoutes = [
   '/dashboard',
   '/invoices',
+  '/customers',
   '/receipts',
   '/payment-vouchers',
-  '/customers',
   '/payments',
   '/keys',
   '/usage',
@@ -103,6 +103,17 @@ export default function App() {
             <ProtectedRoute>
               <DashboardLayout>
                 <InvoicesPage />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/customers"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <CustomersPage />
               </DashboardLayout>
             </ProtectedRoute>
           }
@@ -249,10 +260,7 @@ export default function App() {
 
           <Route path="/docs" element={<DocumentationPage />} />
 
-          <Route
-            path="*"
-            element={<Navigate to="/" replace />}
-          />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
