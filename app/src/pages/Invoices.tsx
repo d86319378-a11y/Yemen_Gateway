@@ -7,7 +7,17 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, FileText, Download, QrCode, Trash2, Eye, AlertTriangle } from 'lucide-react';
+import {
+  Plus,
+  FileText,
+  Download,
+  QrCode,
+  Trash2,
+  Eye,
+  AlertTriangle,
+  Edit,
+  Link2,
+} from 'lucide-react';
 import { API_BASE_URL } from '@/lib/constants';
 
 const statusColors: Record<string, string> = {
@@ -59,6 +69,9 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [editStatus, setEditStatus] = useState('unpaid');
   const [filterStatus, setFilterStatus] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -191,12 +204,59 @@ export default function InvoicesPage() {
     }
   };
 
+  const openEditDialog = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setEditStatus(invoice.status || 'unpaid');
+    setEditOpen(true);
+  };
+
+  const updateInvoiceStatus = async () => {
+    if (!selectedInvoice) return;
+
+    const apiKey = getApiKey();
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/invoices/${selectedInvoice.id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': apiKey,
+        },
+        body: JSON.stringify({ status: editStatus }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'فشل تعديل الفاتورة');
+      }
+
+      setEditOpen(false);
+      setSelectedInvoice(null);
+      await fetchInvoices();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'فشل تعديل الفاتورة');
+    }
+  };
+
+  const copyPaymentLink = async (invoice: Invoice) => {
+    const link = `${window.location.origin}/pay/${invoice.id}`;
+    await navigator.clipboard.writeText(link);
+    alert('تم نسخ رابط الدفع');
+  };
+
+  const totalSales = invoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0);
+  const paidCount = invoices.filter((inv) => inv.status === 'paid').length;
+  const unpaidCount = invoices.filter((inv) => inv.status === 'unpaid').length;
+
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">الفواتير</h1>
-          <p className="text-muted-foreground text-sm mt-1">إنشاء وإدارة فواتير العملاء بسهولة</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            إنشاء وإدارة فواتير العملاء بسهولة
+          </p>
         </div>
 
         <Dialog open={open} onOpenChange={setOpen}>
@@ -304,6 +364,38 @@ export default function InvoicesPage() {
         </Dialog>
       </div>
 
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm text-muted-foreground">إجمالي الفواتير</div>
+            <div className="text-2xl font-bold">{invoices.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm text-muted-foreground">إجمالي المبيعات</div>
+            <div className="text-2xl font-bold">
+              {totalSales.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm text-muted-foreground">المدفوعة</div>
+            <div className="text-2xl font-bold text-green-600">{paidCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm text-muted-foreground">غير المدفوعة</div>
+            <div className="text-2xl font-bold text-yellow-600">{unpaidCount}</div>
+          </CardContent>
+        </Card>
+      </div>
+
       {error && (
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="p-4 flex items-center gap-2 text-amber-800">
@@ -351,6 +443,9 @@ export default function InvoicesPage() {
                     <div>
                       <div className="font-semibold">{inv.number}</div>
                       <div className="text-sm text-muted-foreground">{inv.customer_name}</div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        {inv.items?.[0]?.description || 'بدون وصف'}
+                      </div>
                     </div>
                   </div>
 
@@ -369,6 +464,14 @@ export default function InvoicesPage() {
                     </Badge>
 
                     <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" title="تعديل" onClick={() => openEditDialog(inv)}>
+                        <Edit className="h-4 w-4 text-blue-600" />
+                      </Button>
+
+                      <Button variant="ghost" size="icon" title="نسخ رابط الدفع" onClick={() => copyPaymentLink(inv)}>
+                        <Link2 className="h-4 w-4 text-green-600" />
+                      </Button>
+
                       <Button variant="ghost" size="icon" title="عرض PDF">
                         <Download className="h-4 w-4" />
                       </Button>
@@ -381,7 +484,7 @@ export default function InvoicesPage() {
                         <Eye className="h-4 w-4" />
                       </Button>
 
-                      <Button variant="ghost" size="icon" title="حذف">
+                      <Button variant="ghost" size="icon" title="حذف" onClick={() => alert('الحذف يحتاج تفعيل Endpoint في الـ Backend')}>
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -392,6 +495,41 @@ export default function InvoicesPage() {
           ))}
         </div>
       )}
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>تعديل حالة الفاتورة</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label>رقم الفاتورة</Label>
+              <Input value={selectedInvoice?.number || ''} disabled />
+            </div>
+
+            <div>
+              <Label>حالة الفاتورة</Label>
+              <Select value={editStatus} onValueChange={setEditStatus}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unpaid">غير مدفوعة</SelectItem>
+                  <SelectItem value="paid">مدفوعة</SelectItem>
+                  <SelectItem value="pending">قيد الانتظار</SelectItem>
+                  <SelectItem value="cancelled">ملغاة</SelectItem>
+                  <SelectItem value="draft">مسودة</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button className="w-full" onClick={updateInvoiceStatus}>
+              حفظ التعديل
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
