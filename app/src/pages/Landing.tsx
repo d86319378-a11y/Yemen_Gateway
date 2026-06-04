@@ -2,170 +2,107 @@ import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ArrowRight,
   Zap,
-  Clock,
-  Server,
-  Code2,
-  Activity,
   FileText,
   Receipt,
   ArrowLeftRight,
-  Database,
   CreditCard,
+  Code2,
+  Activity,
+  Clock,
+  Server,
+  Database,
+  CheckCircle,
 } from 'lucide-react';
 
-const features = [
-  {
-    icon: Receipt,
-    title: 'الفواتير الإلكترونية',
-    description: 'إصدار وإدارة الفواتير بشكل رقمي متوافق مع المعايير.',
-  },
-  {
-    icon: FileText,
-    title: 'سندات القبض',
-    description: 'توثيق وتسجيل كافة عمليات القبض النقدية والبنكية.',
-  },
-  {
-    icon: ArrowLeftRight,
-    title: 'سندات الصرف',
-    description: 'إدارة دقيقة لعمليات الصرف المالي والعهاد.',
-  },
-  {
-    icon: CreditCard,
-    title: 'المدفوعات',
-    description: 'بوابة دفع آمنة لدعم التحصيلات المالية المتنوعة.',
-  },
-  {
-    icon: Database,
-    title: 'إدارة العملاء',
-    description: 'نظام متكامل لتنظيم بيانات العملاء وتاريخ تعاملاتهم.',
-  },
-  {
-    icon: Code2,
-    title: 'واجهات المطورين API',
-    description: 'أدوات برمجية احترافية لربط أنظمتك بمنصتنا بسهولة.',
-  },
+const services = [
+  { icon: FileText, title: 'الفواتير الإلكترونية', desc: 'إنشاء فواتير احترافية وحفظها وإدارتها بسهولة.' },
+  { icon: Receipt, title: 'سندات القبض', desc: 'إصدار سندات قبض منظمة للعملاء والمدفوعات.' },
+  { icon: ArrowLeftRight, title: 'سندات الصرف', desc: 'إدارة المصروفات وسندات الصرف بطريقة مبسطة.' },
+  { icon: CreditCard, title: 'المدفوعات', desc: 'متابعة المدفوعات اليدوية وحالات الفواتير.' },
+  { icon: Code2, title: 'API للمطورين', desc: 'مفاتيح API جاهزة للربط مع الأنظمة والتطبيقات.' },
+  { icon: Database, title: 'تقارير وإحصائيات', desc: 'لوحة تحكم لمتابعة الفواتير والمبيعات والاستخدام.' },
 ];
-
-const codeExamples = {
-  curl: `curl -X GET "https://api.yemengateway.dev/v1/invoices" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json"`,
-  js: `const response = await fetch(
-  'https://api.yemengateway.dev/v1/invoices',
-  {
-    headers: {
-      'Authorization': 'Bearer YOUR_API_KEY',
-      'Content-Type': 'application/json'
-    }
-  }
-);
-const data = await response.json();
-console.log(data);`,
-  go: `package main
-
-import (
-    "fmt"
-    "net/http"
-)
-
-func main() {
-    req, _ := http.NewRequest("GET",
-        "https://api.yemengateway.dev/v1/invoices", nil)
-    req.Header.Add("Authorization", "Bearer YOUR_API_KEY")
-    
-    client := &http.Client{}
-    resp, _ := client.Do(req)
-    fmt.Println(resp.Status)
-}`,
-};
 
 export default function Landing() {
   return (
-    <div className="flex flex-col">
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-yemen-950 via-yemen-900 to-background pb-20 pt-16 sm:pb-28 sm:pt-24">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-yemen-600/20 blur-3xl" />
-          <div className="absolute top-20 -left-40 h-80 w-80 rounded-full bg-sand-400/10 blur-3xl" />
-        </div>
+    <div className="flex flex-col bg-slate-50" dir="rtl">
+      <section className="relative overflow-hidden bg-gradient-to-br from-red-950 via-red-900 to-slate-950 px-4 py-24 text-center">
+        <div className="mx-auto max-w-4xl">
+          <Badge className="mb-6 bg-white/10 text-white border-white/20">
+            <Zap className="ml-1 h-3 w-3" />
+            النسخة التجريبية متاحة الآن
+          </Badge>
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="secondary" className="mb-6 bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur">
-              <Zap className="mr-1 h-3 w-3" />
-              منصة رائدة في التحول الرقمي
-            </Badge>
-            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              بوابة اليمن الموحدة
-              <span className="block mt-2 bg-gradient-to-r from-sand-300 to-sand-500 bg-clip-text text-transparent">
-                للخدمات البرمجية
-              </span>
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-300 sm:text-xl">
-              منصة يمنية متكاملة لإدارة الفواتير وسندات القبض وسندات الصرف والمدفوعات وخدمات المطورين عبر واجهات برمجية احترافية وآمنة.
-            </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link to="/login?tab=register">
-                <Button size="lg" className="bg-yemen-600 hover:bg-yemen-700 text-white px-8 shadow-lg shadow-yemen-600/25">
-                  ابدأ مجاناً
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/docs">
-                <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 px-8">
-                  <Code2 className="mr-2 h-4 w-4" />
-                  عرض التوثيق
-                </Button>
-              </Link>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
+            بوابة اليمن الموحدة
+            <span className="block mt-3 text-amber-300">
+              للفواتير والمدفوعات وواجهات API
+            </span>
+          </h1>
+
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-200">
+            منصة يمنية احترافية لإدارة الفواتير الإلكترونية، سندات القبض، سندات الصرف،
+            المدفوعات، ومفاتيح الربط البرمجي للمطورين في مكان واحد.
+          </p>
+
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link to="/login?tab=register">
+              <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-slate-950 px-8">
+                ابدأ مجاناً
+                <ArrowRight className="mr-2 h-4 w-4" />
+              </Button>
+            </Link>
+
+            <Link to="/docs">
+              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 px-8">
+                عرض التوثيق
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b bg-white">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-10 md:grid-cols-4">
+          {[
+            { label: 'نسبة التوفر', value: '99.9%', icon: Activity },
+            { label: 'متوسط الاستجابة', value: '<100ms', icon: Clock },
+            { label: 'خدمات جاهزة', value: '6+', icon: Server },
+            { label: 'ربط API', value: 'مباشر', icon: Code2 },
+          ].map((item) => (
+            <div key={item.label} className="text-center">
+              <item.icon className="mx-auto mb-2 h-5 w-5 text-red-700" />
+              <div className="text-2xl font-bold text-slate-900">{item.value}</div>
+              <div className="text-sm text-slate-500">{item.label}</div>
             </div>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="border-y bg-muted/30">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            {[
-              { label: 'نسبة التوفر', value: '99.9%', icon: Activity },
-              { label: 'متوسط الاستجابة', value: '<100ms', icon: Clock },
-              { label: 'المطورون النشطون', value: '2,500+', icon: Code2 },
-              { label: 'طلبات يومية', value: '1M+', icon: Server },
-            ].map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center text-center">
-                <stat.icon className="mb-2 h-5 w-5 text-yemen-600" />
-                <span className="text-2xl font-bold text-foreground">{stat.value}</span>
-                <span className="text-sm text-muted-foreground">{stat.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Services */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+      <section className="px-4 py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mx-auto mb-14 max-w-2xl text-center">
+            <Badge variant="outline" className="mb-4">الخدمات</Badge>
+            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
               كل ما تحتاجه لإدارة أعمالك
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              حلول متكاملة للفواتير الإلكترونية والمدفوعات وسندات القبض وسندات الصرف وإدارة العملاء.
+            <p className="mt-4 text-slate-600">
+              حلول مبسطة وقابلة للتوسع لأصحاب المتاجر والشركات والمطورين.
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((service) => (
-              <Card key={service.title} className="group relative overflow-hidden border-muted hover:border-yemen-200 transition-all hover:shadow-lg">
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {services.map((service) => (
+              <Card key={service.title} className="border-slate-200 bg-white hover:shadow-lg transition-all">
                 <CardContent className="p-6">
-                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-yemen-50 text-yemen-600 mb-4`}>
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-700">
                     <service.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{service.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{service.description}</p>
+                  <h3 className="mb-2 text-lg font-bold text-slate-900">{service.title}</h3>
+                  <p className="text-sm leading-6 text-slate-600">{service.desc}</p>
                 </CardContent>
               </Card>
             ))}
@@ -173,60 +110,71 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Code Example */}
-      <section className="py-20 sm:py-28 bg-muted/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
+      <section className="bg-white px-4 py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4">
-                مبني للمطورين،
-                <span className="text-yemen-600"> بواسطة المطورين</span>
+              <Badge variant="outline" className="mb-4">لماذا المنصة؟</Badge>
+              <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
+                مصممة للسوق اليمني وقابلة للتوسع عربياً
               </h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                واجهات برمجة تطبيقات بسيطة وبدون تعقيدات. ابدأ الربط في دقائق.
+              <p className="mt-4 text-slate-600">
+                تبدأ بالفواتير والسندات، ثم تتوسع إلى المدفوعات وواجهات الربط وخدمات الأعمال.
               </p>
+
+              <div className="mt-8 space-y-4">
+                {[
+                  'واجهة عربية سهلة الاستخدام',
+                  'API Keys جاهزة للمطورين',
+                  'فواتير وسندات محفوظة في قاعدة بيانات حقيقية',
+                  'مناسبة للمتاجر والشركات الصغيرة ومزودي الخدمات',
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <span className="text-slate-700">{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="rounded-2xl border bg-card shadow-xl overflow-hidden">
-              <Tabs defaultValue="curl" className="w-full">
-                <div className="border-b bg-muted/50 px-4">
-                  <TabsList className="h-12 bg-transparent gap-1">
-                    <TabsTrigger value="curl" className="text-xs data-[state=active]:bg-background">cURL</TabsTrigger>
-                    <TabsTrigger value="js" className="text-xs data-[state=active]:bg-background">JavaScript</TabsTrigger>
-                    <TabsTrigger value="go" className="text-xs data-[state=active]:bg-background">Go</TabsTrigger>
-                  </TabsList>
+
+            <Card className="border-slate-200 shadow-xl">
+              <CardContent className="p-6">
+                <div className="rounded-xl bg-slate-950 p-5 text-left text-sm text-green-400" dir="ltr">
+                  <pre>{`POST /api/v1/invoices
+X-API-Key: yg_xxxxx
+
+{
+  "customer_name": "Ahmed Store",
+  "currency": "YER",
+  "items": [
+    {
+      "description": "Monthly subscription",
+      "quantity": 1,
+      "unit_price": 10000
+    }
+  ]
+}`}</pre>
                 </div>
-                <div className="bg-[#0d1117] p-4 overflow-x-auto">
-                  <TabsContent value="curl">
-                    <pre className="text-sm text-green-400 font-mono"><code>{codeExamples.curl}</code></pre>
-                  </TabsContent>
-                  <TabsContent value="js">
-                    <pre className="text-sm text-yellow-300 font-mono"><code>{codeExamples.js}</code></pre>
-                  </TabsContent>
-                  <TabsContent value="go">
-                    <pre className="text-sm text-cyan-300 font-mono"><code>{codeExamples.go}</code></pre>
-                  </TabsContent>
-                </div>
-              </Tabs>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-yemen-800 via-yemen-900 to-yemen-950 px-6 py-16 sm:px-16 sm:py-20 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              جاهز لإدارة أعمالك؟
-            </h2>
-            <div className="mt-8">
-              <Link to="/login?tab=register">
-                <Button size="lg" className="bg-white text-yemen-900 hover:bg-gray-100 px-8 shadow-xl">
-                  إنشاء حساب مجاني
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
+      <section className="px-4 py-20">
+        <div className="mx-auto max-w-5xl rounded-3xl bg-gradient-to-br from-red-900 to-slate-950 px-6 py-16 text-center shadow-xl">
+          <h2 className="text-3xl font-bold text-white sm:text-4xl">
+            جاهز لإدارة أعمالك بطريقة احترافية؟
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-slate-200">
+            ابدأ الآن مجاناً، وأنشئ أول فاتورة وأول API Key خلال دقائق.
+          </p>
+          <div className="mt-8">
+            <Link to="/login?tab=register">
+              <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-slate-950 px-8">
+                إنشاء حساب مجاني
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
