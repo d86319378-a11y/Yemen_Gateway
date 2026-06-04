@@ -18,6 +18,7 @@ import PaymentVouchersPage from '@/pages/PaymentVouchers';
 import PaymentsPage from '@/pages/Payments';
 import DevelopersPage from '@/pages/Developers';
 import AdminPaymentsPage from '@/pages/AdminPayments';
+import CustomersPage from '@/pages/Customers';
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
@@ -62,6 +63,7 @@ const dashboardRoutes = [
   '/invoices',
   '/receipts',
   '/payment-vouchers',
+  '/customers',
   '/payments',
   '/keys',
   '/usage',
