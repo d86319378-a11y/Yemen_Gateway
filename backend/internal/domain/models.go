@@ -203,6 +203,22 @@ type PaginationParams struct {
 	PerPage int `form:"per_page,default=20"`
 }
 
+// Customer represents a customer record.
+type Customer struct {
+	ID        uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	UserID    uuid.UUID      `gorm:"type:uuid;not null;index" json:"user_id"`
+	User      User           `gorm:"foreignKey:UserID" json:"-"`
+
+	Name      string         `gorm:"not null" json:"name"`
+	Phone     string         `json:"phone"`
+	Email     string         `json:"email"`
+	Address   string         `json:"address"`
+	Notes     string         `json:"notes"`
+
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
 // Invoice represents a Yemeni accounting invoice issued via API.
 type Invoice struct {
 	ID            uuid.UUID      `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
