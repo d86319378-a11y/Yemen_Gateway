@@ -15,22 +15,24 @@ import {
   Server,
   Database,
   CheckCircle,
+  Key,
+  Users,
 } from 'lucide-react';
 
 const services = [
-  { icon: FileText, title: 'الفواتير الإلكترونية', desc: 'إنشاء فواتير احترافية وحفظها وإدارتها بسهولة.' },
-  { icon: Receipt, title: 'سندات القبض', desc: 'إصدار سندات قبض منظمة للعملاء والمدفوعات.' },
-  { icon: ArrowLeftRight, title: 'سندات الصرف', desc: 'إدارة المصروفات وسندات الصرف بطريقة مبسطة.' },
-  { icon: CreditCard, title: 'المدفوعات', desc: 'متابعة المدفوعات اليدوية وحالات الفواتير.' },
-  { icon: Code2, title: 'API للمطورين', desc: 'مفاتيح API جاهزة للربط مع الأنظمة والتطبيقات.' },
-  { icon: Database, title: 'تقارير وإحصائيات', desc: 'لوحة تحكم لمتابعة الفواتير والمبيعات والاستخدام.' },
+  { icon: FileText, title: 'الفواتير الإلكترونية', desc: 'إنشاء فواتير احترافية للعملاء وحفظها ومتابعة حالتها.' },
+  { icon: Receipt, title: 'سندات القبض', desc: 'إصدار سندات قبض منظمة للمدفوعات والتحصيلات اليومية.' },
+  { icon: ArrowLeftRight, title: 'سندات الصرف', desc: 'تسجيل المصروفات وسندات الصرف بطريقة سهلة وواضحة.' },
+  { icon: CreditCard, title: 'المدفوعات', desc: 'متابعة المدفوعات اليدوية وحالات الفواتير من مكان واحد.' },
+  { icon: Users, title: 'إدارة العملاء', desc: 'تنظيم بيانات العملاء وربطهم بالفواتير والسندات.' },
+  { icon: Key, title: 'مفاتيح API', desc: 'واجهات برمجية جاهزة لربط نظامك أو تطبيقك بالمنصة.' },
 ];
 
 export default function Landing() {
   return (
     <div className="flex flex-col bg-slate-50" dir="rtl">
       <section className="relative overflow-hidden bg-gradient-to-br from-red-950 via-red-900 to-slate-950 px-4 py-24 text-center">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
           <Badge className="mb-6 bg-white/10 text-white border-white/20">
             <Zap className="ml-1 h-3 w-3" />
             النسخة التجريبية متاحة الآن
@@ -39,26 +41,25 @@ export default function Landing() {
           <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl">
             بوابة اليمن الموحدة
             <span className="block mt-3 text-amber-300">
-              للفواتير والمدفوعات وواجهات API
+              لإدارة الأعمال والفواتير الإلكترونية
             </span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-200">
-            منصة يمنية احترافية لإدارة الفواتير الإلكترونية، سندات القبض، سندات الصرف،
-            المدفوعات، ومفاتيح الربط البرمجي للمطورين في مكان واحد.
+          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-slate-200">
+            الفواتير الإلكترونية، سندات القبض، سندات الصرف، المدفوعات، وإدارة مفاتيح الربط البرمجي للمطورين في منصة واحدة سهلة وآمنة.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link to="/login?tab=register">
               <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-slate-950 px-8">
-                ابدأ مجاناً
+                ابدأ مجانًا
                 <ArrowRight className="mr-2 h-4 w-4" />
               </Button>
             </Link>
 
-            <Link to="/docs">
+            <Link to="/login">
               <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 px-8">
-                عرض التوثيق
+                تسجيل الدخول
               </Button>
             </Link>
           </div>
@@ -71,7 +72,7 @@ export default function Landing() {
             { label: 'نسبة التوفر', value: '99.9%', icon: Activity },
             { label: 'متوسط الاستجابة', value: '<100ms', icon: Clock },
             { label: 'خدمات جاهزة', value: '6+', icon: Server },
-            { label: 'ربط API', value: 'مباشر', icon: Code2 },
+            { label: 'ربط برمجي', value: 'API', icon: Code2 },
           ].map((item) => (
             <div key={item.label} className="text-center">
               <item.icon className="mx-auto mb-2 h-5 w-5 text-red-700" />
@@ -90,7 +91,7 @@ export default function Landing() {
               كل ما تحتاجه لإدارة أعمالك
             </h2>
             <p className="mt-4 text-slate-600">
-              حلول مبسطة وقابلة للتوسع لأصحاب المتاجر والشركات والمطورين.
+              واجهة عربية سهلة، أدوات مالية عملية، وربط برمجي جاهز للنمو.
             </p>
           </div>
 
@@ -119,15 +120,15 @@ export default function Landing() {
                 مصممة للسوق اليمني وقابلة للتوسع عربياً
               </h2>
               <p className="mt-4 text-slate-600">
-                تبدأ بالفواتير والسندات، ثم تتوسع إلى المدفوعات وواجهات الربط وخدمات الأعمال.
+                تبدأ بإدارة الفواتير والسندات، ثم تتوسع إلى المدفوعات والربط البرمجي وخدمات الأعمال.
               </p>
 
               <div className="mt-8 space-y-4">
                 {[
                   'واجهة عربية سهلة الاستخدام',
-                  'API Keys جاهزة للمطورين',
+                  'مفاتيح API جاهزة للمطورين',
                   'فواتير وسندات محفوظة في قاعدة بيانات حقيقية',
-                  'مناسبة للمتاجر والشركات الصغيرة ومزودي الخدمات',
+                  'مناسبة للمتاجر والشركات ومزودي الخدمات',
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <CheckCircle className="h-5 w-5 text-green-600" />
@@ -169,10 +170,15 @@ X-API-Key: yg_xxxxx
           <p className="mx-auto mt-4 max-w-xl text-slate-200">
             ابدأ الآن مجاناً، وأنشئ أول فاتورة وأول API Key خلال دقائق.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex justify-center gap-3">
             <Link to="/login?tab=register">
               <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-slate-950 px-8">
                 إنشاء حساب مجاني
+              </Button>
+            </Link>
+            <Link to="/login">
+              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 px-8">
+                دخول
               </Button>
             </Link>
           </div>
