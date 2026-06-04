@@ -5,26 +5,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   ArrowRight,
   Zap,
-  Shield,
-  Globe,
-  Smartphone,
   CreditCard,
-  BarChart3,
-  Key,
-  Lock,
-  Clock,
-  Check,
-  ChevronRight,
   Server,
   Code2,
   Database,
   Activity,
-  Mail,
-  Phone,
-  Wallet,
-  FileText,
-  Receipt,
-  ArrowLeftRight
+  Clock,
 } from 'lucide-react';
 
 const features = [
