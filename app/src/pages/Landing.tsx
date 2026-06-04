@@ -7,26 +7,16 @@ import { PLANS } from '@/lib/constants';
 import {
   ArrowRight,
   Zap,
-  Shield,
-  Globe,
-  Smartphone,
-  CreditCard,
-  BarChart3,
-  Key,
-  Lock,
   Clock,
   Check,
-  ChevronRight,
   Server,
   Code2,
-  Database,
   Activity,
-  Mail,
-  Phone,
-  Wallet,
   FileText,
   Receipt,
   ArrowLeftRight,
+  Database,
+  CreditCard,
 } from 'lucide-react';
 
 const features = [
@@ -103,7 +93,6 @@ export default function Landing() {
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-yemen-600/20 blur-3xl" />
           <div className="absolute top-20 -left-40 h-80 w-80 rounded-full bg-sand-400/10 blur-3xl" />
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%23ffffff%22%20fill-opacity%3D%220.03%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -191,7 +180,6 @@ export default function Landing() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
             <div>
-              <Badge variant="outline" className="mb-4">تجربة المطورين</Badge>
               <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4">
                 مبني للمطورين،
                 <span className="text-yemen-600"> بواسطة المطورين</span>
@@ -226,50 +214,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              باقات واضحة ومرنة
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              ابدأ مجاناً ثم اختر الباقة المناسبة لنمو أعمالك.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {PLANS.map((plan) => (
-              <Card
-                key={plan.id}
-                className={`relative flex flex-col ${
-                  plan.highlighted
-                    ? 'border-yemen-400 shadow-xl shadow-yemen-600/10 scale-105 z-10'
-                    : 'border-muted hover:border-yemen-200'
-                } transition-all`}
-              >
-                <CardContent className="flex flex-1 flex-col p-6">
-                  <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
-                  <div className="mb-6">
-                    <span className="text-3xl font-bold text-foreground">${plan.price}</span>
-                  </div>
-                  <ul className="mb-6 flex-1 space-y-2.5">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to="/login?tab=register" className="mt-auto">
-                    <Button className="w-full">اختر الباقة</Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -277,9 +221,6 @@ export default function Landing() {
             <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
               جاهز لإدارة أعمالك؟
             </h2>
-            <p className="mt-4 text-lg text-gray-300 max-w-xl mx-auto">
-              ابدأ باستخدام منصة اليمن لإدارة الفواتير والمدفوعات والعملاء بسهولة.
-            </p>
             <div className="mt-8">
               <Link to="/login?tab=register">
                 <Button size="lg" className="bg-white text-yemen-900 hover:bg-gray-100 px-8 shadow-xl">
