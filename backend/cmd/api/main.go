@@ -95,6 +95,7 @@ func main() {
 	walletRepo := repository.NewWalletRepository(db)
 	logRepo := repository.NewRequestLogRepository(db)
 	invoicingRepo := repository.NewInvoicingRepository(db)
+	customerRepo := repository.NewCustomerRepository(db)
 	webhookRepo := repository.NewWebhookRepository(db)
 
 	authMiddleware := middleware.NewAuthMiddleware(&cfg.JWT, userRepo, keyRepo)
