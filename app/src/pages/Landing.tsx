@@ -2,17 +2,30 @@ import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PLANS } from '@/lib/constants';
 import {
   ArrowRight,
   Zap,
+  Shield,
+  Globe,
+  Smartphone,
   CreditCard,
+  BarChart3,
+  Key,
+  Lock,
+  Clock,
+  Check,
+  ChevronRight,
   Server,
   Code2,
   Database,
   Activity,
-  Clock,
-  Receipt,
+  Mail,
+  Phone,
+  Wallet,
   FileText,
+  Receipt,
   ArrowLeftRight,
 } from 'lucide-react';
 
@@ -49,7 +62,19 @@ const features = [
   },
 ];
 
-
+const codeExamples = {
+  curl: `curl -X GET "https://api.yemengateway.dev/v1/invoices" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json"`,
+  js: `const response = await fetch(
+  'https://api.yemengateway.dev/v1/invoices',
+  {
+    headers: {
+      'Authorization': 'Bearer YOUR_API_KEY',
+      'Content-Type': 'application/json'
+    }
+  }
+);
 const data = await response.json();
 console.log(data);`,
   go: `package main
@@ -161,8 +186,48 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Code Example */}
+      <section className="py-20 sm:py-28 bg-muted/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <Badge variant="outline" className="mb-4">تجربة المطورين</Badge>
+              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4">
+                مبني للمطورين،
+                <span className="text-yemen-600"> بواسطة المطورين</span>
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8">
+                واجهات برمجة تطبيقات بسيطة وبدون تعقيدات. ابدأ الربط في دقائق.
+              </p>
+            </div>
+            <div className="rounded-2xl border bg-card shadow-xl overflow-hidden">
+              <Tabs defaultValue="curl" className="w-full">
+                <div className="border-b bg-muted/50 px-4">
+                  <TabsList className="h-12 bg-transparent gap-1">
+                    <TabsTrigger value="curl" className="text-xs data-[state=active]:bg-background">cURL</TabsTrigger>
+                    <TabsTrigger value="js" className="text-xs data-[state=active]:bg-background">JavaScript</TabsTrigger>
+                    <TabsTrigger value="go" className="text-xs data-[state=active]:bg-background">Go</TabsTrigger>
+                  </TabsList>
+                </div>
+                <div className="bg-[#0d1117] p-4 overflow-x-auto">
+                  <TabsContent value="curl">
+                    <pre className="text-sm text-green-400 font-mono"><code>{codeExamples.curl}</code></pre>
+                  </TabsContent>
+                  <TabsContent value="js">
+                    <pre className="text-sm text-yellow-300 font-mono"><code>{codeExamples.js}</code></pre>
+                  </TabsContent>
+                  <TabsContent value="go">
+                    <pre className="text-sm text-cyan-300 font-mono"><code>{codeExamples.go}</code></pre>
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
-      <section id="pricing" className="py-20 sm:py-28 bg-muted/30">
+      <section id="pricing" className="py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
@@ -172,7 +237,36 @@ export default function Landing() {
               ابدأ مجاناً ثم اختر الباقة المناسبة لنمو أعمالك.
             </p>
           </div>
-          {/* محتوى الباقات يتم استدعاؤه ديناميكياً من PLANS */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {PLANS.map((plan) => (
+              <Card
+                key={plan.id}
+                className={`relative flex flex-col ${
+                  plan.highlighted
+                    ? 'border-yemen-400 shadow-xl shadow-yemen-600/10 scale-105 z-10'
+                    : 'border-muted hover:border-yemen-200'
+                } transition-all`}
+              >
+                <CardContent className="flex flex-1 flex-col p-6">
+                  <h3 className="text-lg font-semibold text-foreground">{plan.name}</h3>
+                  <div className="mb-6">
+                    <span className="text-3xl font-bold text-foreground">${plan.price}</span>
+                  </div>
+                  <ul className="mb-6 flex-1 space-y-2.5">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link to="/login?tab=register" className="mt-auto">
+                    <Button className="w-full">اختر الباقة</Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -180,21 +274,19 @@ export default function Landing() {
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-yemen-800 via-yemen-900 to-yemen-950 px-6 py-16 sm:px-16 sm:py-20 text-center">
-            <div className="relative">
-              <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                جاهز لإدارة أعمالك؟
-              </h2>
-              <p className="mt-4 text-lg text-gray-300 max-w-xl mx-auto">
-                ابدأ باستخدام منصة اليمن لإدارة الفواتير والمدفوعات والعملاء بسهولة.
-              </p>
-              <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Link to="/login?tab=register">
-                  <Button size="lg" className="bg-white text-yemen-900 hover:bg-gray-100 px-8 shadow-xl">
-                    إنشاء حساب مجاني
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              جاهز لإدارة أعمالك؟
+            </h2>
+            <p className="mt-4 text-lg text-gray-300 max-w-xl mx-auto">
+              ابدأ باستخدام منصة اليمن لإدارة الفواتير والمدفوعات والعملاء بسهولة.
+            </p>
+            <div className="mt-8">
+              <Link to="/login?tab=register">
+                <Button size="lg" className="bg-white text-yemen-900 hover:bg-gray-100 px-8 shadow-xl">
+                  إنشاء حساب مجاني
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
