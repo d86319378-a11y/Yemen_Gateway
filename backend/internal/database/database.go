@@ -45,24 +45,25 @@ func Migrate() error {
 	logger.Info("running database migrations")
 
 	err := db.AutoMigrate(
-		&domain.User{},
-		&domain.Plan{},
-		&domain.APIKey{},
-		&domain.Subscription{},
-		&domain.RequestLog{},
-		&domain.CurrencyRate{},
-		&domain.PhoneVerification{},
-		&domain.SMSLog{},
-		&domain.WalletProvider{},
-		&domain.Payment{},
-		&domain.Invoice{},
-		&domain.InvoiceItem{},
-		&domain.AccountingVoucher{},
-		&domain.ManualPaymentProof{},
-		&domain.AuditLog{},
-		&domain.WebhookConfig{},
-		&domain.WebhookDelivery{},
-	)
+	&domain.User{},
+	&domain.Plan{},
+	&domain.APIKey{},
+	&domain.Subscription{},
+	&domain.RequestLog{},
+	&domain.CurrencyRate{},
+	&domain.PhoneVerification{},
+	&domain.SMSLog{},
+	&domain.WalletProvider{},
+	&domain.Payment{},
+	&domain.Customer{},
+	&domain.Invoice{},
+	&domain.InvoiceItem{},
+	&domain.AccountingVoucher{},
+	&domain.ManualPaymentProof{},
+	&domain.AuditLog{},
+	&domain.WebhookConfig{},
+	&domain.WebhookDelivery{},
+)
 	if err != nil {
 		logger.Error("failed to migrate database", zap.Error(err))
 		return err
