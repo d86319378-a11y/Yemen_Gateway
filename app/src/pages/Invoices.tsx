@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '@/config';
+import { API_BASE_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -85,10 +85,25 @@ export default function InvoicesPage() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    const token = localStorage.getItem('yg_token');
+    if (!token) return;
+
+    const res = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      setInvoices(invoices.filter((inv) => inv.id !== id));
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">إنشاء فاتورة جديدة</h1>
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-3 bg-white p-4 rounded shadow-sm">
         <div>
           <Label>اختر عميل</Label>
           <Select
@@ -157,14 +172,14 @@ export default function InvoicesPage() {
         <Button type="submit">إنشاء الفاتورة</Button>
       </form>
 
-      <Separator className="my-6" />
+      <hr className="my-6 border-t" />
 
       <h2 className="text-lg font-semibold mb-2">الفواتير الحالية</h2>
       <div className="space-y-2">
         {invoices.map((inv) => (
           <div
             key={inv.id}
-            className="border rounded p-3 flex justify-between items-center"
+            className="border rounded p-3 flex justify-between items-center bg-white shadow-sm"
           >
             <div>
               <p>العميل: {inv.customer_name}</p>
@@ -173,9 +188,9 @@ export default function InvoicesPage() {
               <p>المبلغ: {inv.amount}</p>
               <p>الحالة: {inv.status}</p>
             </div>
-            <div className="space-x-2">
-              <Button>تعديل</Button>
-              <Button variant="destructive">حذف</Button>
+            <div className="flex gap-2">
+              <Button onClick={() => alert('نافذة تعديل الفاتورة')}>تعديل</Button>
+              <Button variant="destructive" onClick={() => handleDelete(inv.id)}>حذف</Button>
             </div>
           </div>
         ))}
