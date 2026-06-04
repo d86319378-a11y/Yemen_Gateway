@@ -13,7 +13,6 @@ import {
   Activity,
   Clock,
   Server,
-  Database,
   CheckCircle,
   Key,
   Users,
