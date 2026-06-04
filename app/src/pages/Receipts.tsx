@@ -1,145 +1,185 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { API_BASE_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Plus, Receipt, Download } from 'lucide-react';
-import { API_BASE_URL } from '@/lib/constants';
+import { Separator } from '@/components/ui/separator';
 
-function getToken() {
-  return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '';
-}
-
-interface Voucher {
+interface Receipt {
   id: string;
-  number: string;
-  type: string;
-  party_name: string;
-  party_phone: string;
+  customer_name: string;
+  customer_phone?: string;
+  customer_email?: string;
   amount: number;
-  currency: string;
-  method: string;
-  description: string;
   status: string;
   created_at: string;
 }
 
+interface Customer {
+  id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+}
+
 export default function ReceiptsPage() {
-  const [vouchers, setVouchers] = useState<Voucher[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
+  const [receipts, setReceipts] = useState<Receipt[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState('');
   const [form, setForm] = useState({
-    type: 'receipt', party_name: '', party_phone: '', amount: 0,
-    currency: 'YER', method: 'cash', reference: '', description: '', related_invoice_id: '',
+    customer_name: '',
+    customer_phone: '',
+    customer_email: '',
+    amount: 0,
   });
 
-  useEffect(() => { fetchVouchers(); }, []);
+  const fetchReceipts = async () => {
+    const token = localStorage.getItem('yg_token');
+    if (!token) return;
 
-  const fetchVouchers = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/vouchers?type=receipt`, { headers: { 'X-API-Key': getToken() } });
-      const data = await res.json();
-      if (data.success) setVouchers(data.data || []);
-    } catch (e) { console.error(e); }
-    finally { setLoading(false); }
-  };
-
-  const createVoucher = async () => {
-    const res = await fetch(`${API_BASE_URL}/api/v1/vouchers`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': getToken() },
-      body: JSON.stringify({ ...form, type: 'receipt' }),
+    const res = await fetch(`${API_BASE_URL}/api/v1/receipts`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
-    if (data.success) { setOpen(false); fetchVouchers(); }
-    else alert(data.error || 'فشل إنشاء السند');
+    if (data.success) setReceipts(data.data);
+  };
+
+  const fetchCustomers = async () => {
+    const token = localStorage.getItem('yg_token');
+    if (!token) return;
+
+    const res = await fetch(`${API_BASE_URL}/api/v1/customers`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.success) setCustomers(data.data || []);
+  };
+
+  useEffect(() => {
+    fetchReceipts();
+    fetchCustomers();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem('yg_token');
+    if (!token) return;
+
+    const res = await fetch(`${API_BASE_URL}/api/v1/receipts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      setReceipts([...receipts, data.data]);
+      setForm({ customer_name: '', customer_phone: '', customer_email: '', amount: 0 });
+      setSelectedCustomer('');
+    }
   };
 
   return (
-    <div className="space-y-6" dir="rtl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">سندات القبض</h1>
-          <p className="text-muted-foreground text-sm mt-1">توثيق المبالغ المستلمة</p>
-        </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2"><Plus className="h-4 w-4" />سند جديد</Button>
-          </DialogTrigger>
-          <DialogContent dir="rtl">
-            <DialogHeader><DialogTitle>إنشاء سند قبض</DialogTitle></DialogHeader>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div><Label>اسم الدافع *</Label><Input value={form.party_name} onChange={e => setForm({...form, party_name: e.target.value})} /></div>
-                <div><Label>رقم الهاتف</Label><Input value={form.party_phone} onChange={e => setForm({...form, party_phone: e.target.value})} /></div>
-                <div><Label>المبلغ *</Label><Input type="number" value={form.amount} onChange={e => setForm({...form, amount: Number(e.target.value)})} /></div>
-                <div><Label>العملة</Label>
-                  <Select value={form.currency} onValueChange={v => setForm({...form, currency: v})}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="YER">ريال يمني</SelectItem>
-                      <SelectItem value="USD">دولار</SelectItem>
-                      <SelectItem value="SAR">ريال سعودي</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div><Label>طريقة الدفع</Label>
-                  <Select value={form.method} onValueChange={v => setForm({...form, method: v})}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cash">نقدي</SelectItem>
-                      <SelectItem value="wallet">محفظة إلكترونية</SelectItem>
-                      <SelectItem value="bank_transfer">تحويل بنكي</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div><Label>رقم المرجع</Label><Input value={form.reference} onChange={e => setForm({...form, reference: e.target.value})} /></div>
-              </div>
-              <div><Label>رقم الفاتورة المرتبطة</Label><Input value={form.related_invoice_id} onChange={e => setForm({...form, related_invoice_id: e.target.value})} placeholder="اختياري" /></div>
-              <div><Label>الوصف</Label><Textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} /></div>
-              <Button className="w-full" onClick={createVoucher}>إنشاء السند</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+    <div className="p-6">
+      <h1 className="text-xl font-bold mb-4">إنشاء سند قبض جديد</h1>
 
-      {loading ? (
-        <div className="text-center py-12 text-muted-foreground">جار التحميل...</div>
-      ) : vouchers.length === 0 ? (
-        <Card><CardContent className="py-12 text-center"><Receipt className="h-12 w-12 text-muted-foreground mx-auto mb-4" /><p className="text-muted-foreground">لا توجد سندات قبض</p></CardContent></Card>
-      ) : (
-        <div className="grid gap-4">
-          {vouchers.map(v => (
-            <Card key={v.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center">
-                      <Receipt className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <div className="font-semibold">{v.number}</div>
-                      <div className="text-sm text-muted-foreground">{v.party_name}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-bold text-lg text-green-700">{v.amount?.toLocaleString()} {v.currency}</div>
-                      <div className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString('ar-YE')}</div>
-                    </div>
-                    <Badge variant="outline">{v.method === 'cash' ? 'نقدي' : v.method === 'wallet' ? 'محفظة' : 'تحويل'}</Badge>
-                    <Button variant="ghost" size="icon"><Download className="h-4 w-4" /></Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div>
+          <Label>اختر عميل</Label>
+          <Select
+            value={selectedCustomer}
+            onValueChange={(value) => {
+              setSelectedCustomer(value);
+              const customer = customers.find((c) => c.id === value);
+              if (customer) {
+                setForm({
+                  ...form,
+                  customer_name: customer.name || '',
+                  customer_phone: customer.phone || '',
+                  customer_email: customer.email || '',
+                });
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="اختر عميل محفوظ" />
+            </SelectTrigger>
+            <SelectContent>
+              {customers.map((customer) => (
+                <SelectItem key={customer.id} value={customer.id}>
+                  {customer.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-      )}
+
+        <div>
+          <Label>اسم العميل</Label>
+          <Input
+            value={form.customer_name}
+            onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
+            required
+          />
+        </div>
+
+        <div>
+          <Label>الهاتف</Label>
+          <Input
+            value={form.customer_phone}
+            onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <Label>البريد الإلكتروني</Label>
+          <Input
+            value={form.customer_email}
+            onChange={(e) => setForm({ ...form, customer_email: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <Label>المبلغ</Label>
+          <Input
+            type="number"
+            value={form.amount}
+            onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) })}
+            required
+          />
+        </div>
+
+        <Button type="submit">إنشاء سند قبض</Button>
+      </form>
+
+      <Separator className="my-6" />
+
+      <h2 className="text-lg font-semibold mb-2">سندات القبض الحالية</h2>
+      <div className="space-y-2">
+        {receipts.map((receipt) => (
+          <div
+            key={receipt.id}
+            className="border rounded p-3 flex justify-between items-center"
+          >
+            <div>
+              <p>العميل: {receipt.customer_name}</p>
+              <p>الهاتف: {receipt.customer_phone}</p>
+              <p>البريد: {receipt.customer_email}</p>
+              <p>المبلغ: {receipt.amount}</p>
+              <p>الحالة: {receipt.status}</p>
+            </div>
+            <div className="space-x-2">
+              <Button>تعديل</Button>
+              <Button variant="destructive">حذف</Button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
