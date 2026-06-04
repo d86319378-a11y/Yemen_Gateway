@@ -4,9 +4,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import {
-  LayoutDashboard, Key, BarChart3, Settings, Code2,
-  LogOut, CreditCard, Shield, FileText, Receipt, ArrowUpDown,
-  Wallet, Code, TrendingUp,
+  LayoutDashboard,
+  Key,
+  BarChart3,
+  Settings,
+  Code2,
+  LogOut,
+  CreditCard,
+  Shield,
+  FileText,
+  Receipt,
+  ArrowUpDown,
+  Wallet,
+  Code,
+  TrendingUp,
+  Users,
 } from 'lucide-react';
 import type { User } from '@/types';
 
@@ -16,12 +28,13 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'لوحة التحكم', href: '/dashboard', icon: LayoutDashboard },
   { label: 'الفواتير', href: '/invoices', icon: FileText },
+  { label: 'العملاء', href: '/customers', icon: Users },
   { label: 'سندات القبض', href: '/receipts', icon: Receipt },
   { label: 'سندات الصرف', href: '/payment-vouchers', icon: ArrowUpDown },
   { label: 'المدفوعات', href: '/payments', icon: Wallet },
-  { label: 'API Keys', href: '/keys', icon: Key },
+  { label: 'مفاتيح API', href: '/keys', icon: Key },
   { label: 'الإحصائيات', href: '/usage', icon: BarChart3 },
   { label: 'المطورون', href: '/developers', icon: Code },
   { label: 'الاشتراك', href: '/billing', icon: CreditCard },
