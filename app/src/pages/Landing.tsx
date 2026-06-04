@@ -11,6 +11,9 @@ import {
   Database,
   Activity,
   Clock,
+  Receipt,
+  FileText,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 const features = [
@@ -46,19 +49,7 @@ const features = [
   },
 ];
 
-const codeExamples = {
-  curl: `curl -X GET "https://api.yemengateway.dev/v1/invoices" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json"`,
-  js: `const response = await fetch(
-  'https://api.yemengateway.dev/v1/invoices',
-  {
-    headers: {
-      'Authorization': 'Bearer YOUR_API_KEY',
-      'Content-Type': 'application/json'
-    }
-  }
-);
+
 const data = await response.json();
 console.log(data);`,
   go: `package main
