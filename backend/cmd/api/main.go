@@ -96,6 +96,7 @@ func main() {
 	logRepo := repository.NewRequestLogRepository(db)
 	invoicingRepo := repository.NewInvoicingRepository(db)
 	customerRepo := repository.NewCustomerRepository(db)
+	customerHandler := handlers.NewCustomerHandler(customerRepo)
 	webhookRepo := repository.NewWebhookRepository(db)
 
 	authMiddleware := middleware.NewAuthMiddleware(&cfg.JWT, userRepo, keyRepo)
@@ -222,23 +223,29 @@ func main() {
 	}
 
 	protected := v1.Group("")
-	protected.Use(authMiddleware.JWTAuth())
-	{
-		protected.GET("/auth/me", authHandler.Me)
-		protected.GET("/keys", apiKeyHandler.List)
-protected.POST("/keys", apiKeyHandler.Create)
-protected.DELETE("/keys/:id", apiKeyHandler.Delete)
+protected.Use(authMiddleware.JWTAuth())
+{
+	protected.GET("/auth/me", authHandler.Me)
 
-		protected.GET("/billing/plans", billingHandler.ListPlans)
-		protected.GET("/billing/usage", billingHandler.GetUsage)
-		protected.GET("/billing/invoices", billingHandler.GetInvoices)
+	protected.GET("/keys", apiKeyHandler.List)
+	protected.POST("/keys", apiKeyHandler.Create)
+	protected.DELETE("/keys/:id", apiKeyHandler.Delete)
 
-		protected.GET("/invoicing/stats", statsHandler.GetDashboardStats)
+	protected.GET("/customers", customerHandler.List)
+	protected.POST("/customers", customerHandler.Create)
+	protected.PUT("/customers/:id", customerHandler.Update)
+	protected.DELETE("/customers/:id", customerHandler.Delete)
 
-		protected.POST("/webhooks", webhookHandler.Create)
-		protected.GET("/webhooks", webhookHandler.List)
-		protected.DELETE("/webhooks/:id", webhookHandler.Delete)
-	}
+	protected.GET("/billing/plans", billingHandler.ListPlans)
+	protected.GET("/billing/usage", billingHandler.GetUsage)
+	protected.GET("/billing/invoices", billingHandler.GetInvoices)
+
+	protected.GET("/invoicing/stats", statsHandler.GetDashboardStats)
+
+	protected.POST("/webhooks", webhookHandler.Create)
+	protected.GET("/webhooks", webhookHandler.List)
+	protected.DELETE("/webhooks/:id", webhookHandler.Delete)
+}
 
 	api := v1.Group("")
 	api.Use(authMiddleware.APIKeyAuth())
