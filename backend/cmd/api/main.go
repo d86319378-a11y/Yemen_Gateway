@@ -297,6 +297,7 @@ protected.Use(authMiddleware.JWTAuth())
 		analytics.GET("/usage", analyticsHandler.GetUsage)
 		analytics.GET("/logs", analyticsHandler.GetLogs)
 		analytics.GET("/dashboard", analyticsHandler.Dashboard)
+		analytics.GET("/overview", analyticsHandler.GetOverview)
 	}
 
 	admin := v1.Group("/admin")
