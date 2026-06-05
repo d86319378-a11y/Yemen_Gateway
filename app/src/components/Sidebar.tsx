@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Phone, DollarSign } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import {
   LayoutDashboard,
   Key,
@@ -43,6 +44,11 @@ const menuItems = [
   { label: 'الاشتراك', href: '/billing', icon: CreditCard },
   { label: 'أسعار الصرف', href: '/exchange-rates', icon: DollarSign },
 { label: 'التحقق من الأرقام', href: '/phone-verify', icon: Phone },
+  {
+  label: 'سجلات API',
+  href: '/api-logs',
+  icon: Activity,
+},
 ];
 
 const bottomItems = [
