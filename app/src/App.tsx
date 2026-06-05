@@ -21,6 +21,7 @@ import DevelopersPage from '@/pages/Developers';
 import AdminPaymentsPage from '@/pages/AdminPayments';
 import ExchangeRatesPage from '@/pages/ExchangeRates';
 import PhoneVerifyPage from '@/pages/PhoneVerify';
+import APIPlaygroundPage from '@/pages/APIPlayground';
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
@@ -75,6 +76,7 @@ const dashboardRoutes = [
   '/developers',
   '/exchange-rates',
 '/phone-verify',
+  '/playground',
 ];
 
 export default function App() {
@@ -101,6 +103,17 @@ export default function App() {
           }
         />
 
+        <Route
+  path="/playground"
+  element={
+    <ProtectedRoute>
+      <DashboardLayout>
+        <APIPlaygroundPage />
+      </DashboardLayout>
+    </ProtectedRoute>
+  }
+/>
+        
         <Route
           path="/invoices"
           element={
