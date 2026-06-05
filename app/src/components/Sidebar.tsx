@@ -20,6 +20,7 @@ import {
   Code,
   TrendingUp,
   Users,
+  Terminal,
 } from 'lucide-react';
 import type { User } from '@/types';
 
@@ -36,6 +37,7 @@ const menuItems = [
   { label: 'سندات الصرف', href: '/payment-vouchers', icon: ArrowUpDown },
   { label: 'المدفوعات', href: '/payments', icon: Wallet },
   { label: 'مفاتيح API', href: '/keys', icon: Key },
+  { label: 'تجربة API', href: '/playground', icon: Terminal },
   { label: 'الإحصائيات', href: '/usage', icon: BarChart3 },
   { label: 'المطورون', href: '/developers', icon: Code },
   { label: 'الاشتراك', href: '/billing', icon: CreditCard },
