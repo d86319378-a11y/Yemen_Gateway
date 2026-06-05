@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Phone, DollarSign } from 'lucide-react';
 import {
   LayoutDashboard,
   Key,
@@ -38,6 +39,8 @@ const menuItems = [
   { label: 'الإحصائيات', href: '/usage', icon: BarChart3 },
   { label: 'المطورون', href: '/developers', icon: Code },
   { label: 'الاشتراك', href: '/billing', icon: CreditCard },
+  { label: 'أسعار الصرف', href: '/exchange-rates', icon: DollarSign },
+{ label: 'التحقق من الأرقام', href: '/phone-verify', icon: Phone },
 ];
 
 const bottomItems = [
