@@ -19,6 +19,8 @@ import PaymentVouchersPage from '@/pages/PaymentVouchers';
 import PaymentsPage from '@/pages/Payments';
 import DevelopersPage from '@/pages/Developers';
 import AdminPaymentsPage from '@/pages/AdminPayments';
+import ExchangeRatesPage from '@/pages/ExchangeRates';
+import PhoneVerifyPage from '@/pages/PhoneVerify';
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
@@ -71,6 +73,8 @@ const dashboardRoutes = [
   '/billing',
   '/admin',
   '/developers',
+  '/exchange-rates',
+'/phone-verify',
 ];
 
 export default function App() {
@@ -141,6 +145,28 @@ export default function App() {
           }
         />
 
+        <Route
+  path="/exchange-rates"
+  element={
+    <ProtectedRoute>
+      <DashboardLayout>
+        <ExchangeRatesPage />
+      </DashboardLayout>
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/phone-verify"
+  element={
+    <ProtectedRoute>
+      <DashboardLayout>
+        <PhoneVerifyPage />
+      </DashboardLayout>
+    </ProtectedRoute>
+  }
+/>
+        
         <Route
           path="/payments"
           element={
