@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"time"
+
 	"yemenapi/internal/domain"
 	"yemenapi/internal/repository"
 
@@ -18,16 +20,13 @@ func NewAnalyticsHandler(logRepo *repository.RequestLogRepository) *AnalyticsHan
 	return &AnalyticsHandler{logRepo: logRepo}
 }
 
-// @Summary Get usage stats
-// @Description Get API usage statistics for the authenticated user
-// @Tags Analytics
-// @Accept json
-// @Produce json
-// @Success 200 {object} domain.APIResponse
-// @Router /api/v1/analytics/usage [get]
 func (h *AnalyticsHandler) GetUsage(c *gin.Context) {
 	userID, _ := c.Get("user_id")
-	uid, _ := uuid.Parse(userID.(string))
+	uid, err := uuid.Parse(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, domain.APIResponse{Success: false, Error: "Invalid user"})
+		return
+	}
 
 	now := time.Now()
 	from := now.AddDate(0, 0, -30)
@@ -38,7 +37,6 @@ func (h *AnalyticsHandler) GetUsage(c *gin.Context) {
 		return
 	}
 
-	// Get endpoint stats
 	endpoints, err := h.logRepo.GetEndpointStats(uid, from, now)
 	if err != nil {
 		endpoints = []map[string]interface{}{}
@@ -54,13 +52,68 @@ func (h *AnalyticsHandler) GetUsage(c *gin.Context) {
 	})
 }
 
-// @Summary Get dashboard summary
-// @Description Get dashboard summary for admin
-// @Tags Analytics
-// @Accept json
-// @Produce json
-// @Success 200 {object} domain.APIResponse
-// @Router /api/v1/analytics/dashboard [get]
+func (h *AnalyticsHandler) GetOverview(c *gin.Context) {
+	userID, _ := c.Get("user_id")
+	uid, err := uuid.Parse(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, domain.APIResponse{
+			Success: false,
+			Error:   "Invalid user",
+		})
+		return
+	}
+
+	days := 7
+	if d := c.Query("days"); d != "" {
+		if parsed, err := strconv.Atoi(d); err == nil && parsed > 0 {
+			days = parsed
+		}
+	}
+
+	now := time.Now()
+	from := now.AddDate(0, 0, -days)
+
+	stats, err := h.logRepo.GetStats(uid, from, now)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, domain.APIResponse{
+			Success: false,
+			Error:   "Failed to fetch analytics stats",
+		})
+		return
+	}
+
+	endpoints, err := h.logRepo.GetEndpointStats(uid, from, now)
+	if err != nil {
+		endpoints = []map[string]interface{}{}
+	}
+
+	totalRequests := toFloat64(stats["total_requests"])
+	successCount := toFloat64(stats["success_count"])
+	errorCount := toFloat64(stats["error_count"])
+
+	successRate := float64(0)
+	errorRate := float64(0)
+
+	if totalRequests > 0 {
+		successRate = successCount / totalRequests * 100
+		errorRate = errorCount / totalRequests * 100
+	}
+
+	c.JSON(http.StatusOK, domain.APIResponse{
+		Success: true,
+		Data: map[string]interface{}{
+			"period":         days,
+			"total_requests": int64(totalRequests),
+			"success_count":  int64(successCount),
+			"error_count":    int64(errorCount),
+			"success_rate":   successRate,
+			"error_rate":     errorRate,
+			"avg_latency":    stats["avg_latency"],
+			"top_endpoints":  endpoints,
+		},
+	})
+}
+
 func (h *AnalyticsHandler) Dashboard(c *gin.Context) {
 	c.JSON(http.StatusOK, domain.APIResponse{
 		Success: true,
@@ -78,31 +131,32 @@ func (h *AnalyticsHandler) Dashboard(c *gin.Context) {
 				{"endpoint": "GET /v1/wallets", "calls": 100000, "percentage": 8},
 				{"endpoint": "Others", "calls": 50000, "percentage": 4},
 			},
-			"revenue_month": 4250.00,
+			"revenue_month":  4250.00,
 			"new_users_month": 342,
 		},
 	})
 }
 
-// @Summary Get request logs
-// @Description Get recent request logs
-// @Tags Analytics
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number"
-// @Param per_page query int false "Items per page"
-// @Success 200 {object} domain.APIResponse
-// @Router /api/v1/analytics/logs [get]
 func (h *AnalyticsHandler) GetLogs(c *gin.Context) {
 	userID, _ := c.Get("user_id")
-	uid, _ := uuid.Parse(userID.(string))
+	uid, err := uuid.Parse(userID.(string))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, domain.APIResponse{Success: false, Error: "Invalid user"})
+		return
+	}
 
 	page := 1
 	perPage := 20
 
 	if p := c.Query("page"); p != "" {
-		if parsed, err := time.Parse("2006-01-02", p); err == nil {
-			_ = parsed
+		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
+			page = parsed
+		}
+	}
+
+	if pp := c.Query("per_page"); pp != "" {
+		if parsed, err := strconv.Atoi(pp); err == nil && parsed > 0 && parsed <= 100 {
+			perPage = parsed
 		}
 	}
 
@@ -127,4 +181,21 @@ func (h *AnalyticsHandler) GetLogs(c *gin.Context) {
 			TotalPages: totalPages,
 		},
 	})
+}
+
+func toFloat64(v interface{}) float64 {
+	switch n := v.(type) {
+	case int:
+		return float64(n)
+	case int64:
+		return float64(n)
+	case int32:
+		return float64(n)
+	case float64:
+		return n
+	case float32:
+		return float64(n)
+	default:
+		return 0
+	}
 }
