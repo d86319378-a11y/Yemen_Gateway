@@ -34,18 +34,12 @@ export default function InvoicesPage() {
     amount: 0,
   });
 
-  // ضع هنا مفتاح الـ API الخاص بك أو خذه من localStorage
-  const API_KEY = localStorage.getItem('yg_api_key') || 'ضع_مفتاح_API_هنا';
-
   const fetchInvoices = async () => {
     const token = localStorage.getItem('yg_token');
     if (!token) return;
 
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'X-API-Key': API_KEY,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     const data = await res.json();
@@ -57,10 +51,7 @@ export default function InvoicesPage() {
     if (!token) return;
 
     const res = await fetch(`${API_BASE_URL}/api/v1/customers`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'X-API-Key': API_KEY,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     const data = await res.json();
@@ -77,14 +68,30 @@ export default function InvoicesPage() {
     const token = localStorage.getItem('yg_token');
     if (!token) return;
 
+    const body = {
+      customer_name: form.customer_name,
+      customer_phone: form.customer_phone,
+      customer_email: form.customer_email,
+      currency: 'YER',
+      tax: 0,
+      discount: 0,
+      notes: '',
+      items: [
+        {
+          description: 'خدمة / منتج',
+          quantity: 1,
+          unit_price: Number(form.amount),
+        },
+      ],
+    };
+
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
-        'X-API-Key': API_KEY,
       },
-      body: JSON.stringify(form),
+      body: JSON.stringify(body),
     });
 
     const data = await res.json();
@@ -103,17 +110,12 @@ export default function InvoicesPage() {
 
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
       method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'X-API-Key': API_KEY,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     const data = await res.json();
     if (data.success) {
       setInvoices(invoices.filter((inv) => inv.id !== id));
-    } else {
-      alert(data.error || 'فشل حذف الفاتورة');
     }
   };
 
