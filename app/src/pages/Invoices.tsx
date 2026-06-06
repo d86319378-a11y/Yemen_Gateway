@@ -29,7 +29,6 @@ interface Customer {
   name: string;
   phone?: string;
   email?: string;
-  address?: string;
 }
 
 export default function InvoicesPage() {
@@ -61,20 +60,6 @@ export default function InvoicesPage() {
     fetchInvoices();
   };
 
-  const fetchInvoices = async () => {
-    const key = getApiKey();
-    if (!key) return;
-
-    const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
-      headers: {
-        'X-API-Key': key,
-      },
-    });
-
-    const data = await res.json();
-    if (data.success) setInvoices(data.data || []);
-  };
-
   const fetchCustomers = async () => {
     const token = getJwtToken();
     if (!token) return;
@@ -89,10 +74,63 @@ export default function InvoicesPage() {
     if (data.success) setCustomers(data.data || []);
   };
 
+  const fetchInvoices = async () => {
+    const key = getApiKey();
+    if (!key) return;
+
+    const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
+      headers: {
+        'X-API-Key': key,
+      },
+    });
+
+    const data = await res.json();
+    if (data.success) setInvoices(data.data || []);
+  };
+
   useEffect(() => {
     fetchCustomers();
     fetchInvoices();
   }, []);
+
+  const handleCreateCustomer = async () => {
+    const token = getJwtToken();
+
+    if (!token) {
+      alert('يجب تسجيل الدخول أولاً');
+      return;
+    }
+
+    const name = prompt('أدخل اسم العميل الجديد');
+    if (!name) return;
+
+    const res = await fetch(`${API_BASE_URL}/api/v1/customers`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      const newCustomer = data.data as Customer;
+
+      setCustomers((prev) => [newCustomer, ...prev]);
+      setSelectedCustomer(newCustomer.id);
+
+      setForm((prev) => ({
+        ...prev,
+        customer_name: newCustomer.name,
+        customer_phone: newCustomer.phone || '',
+        customer_email: newCustomer.email || '',
+      }));
+    } else {
+      alert(data.error || 'فشل إنشاء العميل');
+    }
+  };
 
   const handleSubmitInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,56 +184,18 @@ export default function InvoicesPage() {
       const createdInvoice = data.data?.invoice || data.data;
 
       setInvoices((prev) => [createdInvoice, ...prev]);
+
       setForm({
         customer_name: '',
         customer_phone: '',
         customer_email: '',
         amount: 0,
       });
-      setSelectedCustomer('');
 
+      setSelectedCustomer('');
       await fetchInvoices();
     } else {
       alert(data.error || 'فشل إنشاء الفاتورة');
-    }
-  };
-
-  const handleCreateCustomer = async () => {
-    const token = getJwtToken();
-
-    if (!token) {
-      alert('يجب تسجيل الدخول أولاً');
-      return;
-    }
-
-    const name = prompt('أدخل اسم العميل الجديد');
-    if (!name) return;
-
-    const res = await fetch(`${API_BASE_URL}/api/v1/customers`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      const newCustomer = data.data as Customer;
-
-      setCustomers((prev) => [newCustomer, ...prev]);
-      setSelectedCustomer(newCustomer.id);
-
-      setForm((prev) => ({
-        ...prev,
-        customer_name: newCustomer.name,
-        customer_phone: newCustomer.phone || '',
-        customer_email: newCustomer.email || '',
-      }));
-    } else {
-      alert(data.error || 'فشل إنشاء العميل');
     }
   };
 
@@ -204,7 +204,7 @@ export default function InvoicesPage() {
       <div>
         <h1 className="text-xl font-bold mb-1">إنشاء فاتورة جديدة</h1>
         <p className="text-sm text-muted-foreground">
-          الفواتير تستخدم API Key، والعملاء يستخدمون تسجيل الدخول JWT.
+          العملاء يستخدمون تسجيل الدخول، والفواتير تستخدم API Key.
         </p>
       </div>
 
@@ -311,8 +311,6 @@ export default function InvoicesPage() {
         <Button type="submit">إنشاء الفاتورة</Button>
       </form>
 
-      <hr className="my-6 border-t" />
-
       <h2 className="text-lg font-semibold">الفواتير الحالية</h2>
 
       <div className="space-y-2">
@@ -324,20 +322,18 @@ export default function InvoicesPage() {
           invoices.map((inv) => (
             <div
               key={inv.id}
-              className="border rounded p-3 flex justify-between items-center bg-white shadow-sm"
+              className="border rounded p-3 bg-white shadow-sm"
             >
-              <div className="space-y-1">
-                <p>رقم الفاتورة: {inv.number || inv.id}</p>
-                <p>العميل: {inv.customer_name}</p>
-                <p>الهاتف: {inv.customer_phone || '-'}</p>
-                <p>البريد: {inv.customer_email || '-'}</p>
-                <p>
-                  المبلغ:{' '}
-                  {Number(inv.total || inv.amount || 0).toLocaleString()}{' '}
-                  {inv.currency || 'YER'}
-                </p>
-                <p>الحالة: {inv.status}</p>
-              </div>
+              <p>رقم الفاتورة: {inv.number || inv.id}</p>
+              <p>العميل: {inv.customer_name}</p>
+              <p>الهاتف: {inv.customer_phone || '-'}</p>
+              <p>البريد: {inv.customer_email || '-'}</p>
+              <p>
+                المبلغ:{' '}
+                {Number(inv.total || inv.amount || 0).toLocaleString()}{' '}
+                {inv.currency || 'YER'}
+              </p>
+              <p>الحالة: {inv.status}</p>
             </div>
           ))
         )}
