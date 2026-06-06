@@ -63,6 +63,7 @@ func Migrate() error {
 	&domain.AuditLog{},
 	&domain.WebhookConfig{},
 	&domain.WebhookDelivery{},
+	&domain.Notification{},	
 )
 	if err != nil {
 		logger.Error("failed to migrate database", zap.Error(err))
