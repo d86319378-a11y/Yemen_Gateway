@@ -89,17 +89,17 @@ func main() {
 	db := database.GetDB()
 
 	userRepo := repository.NewUserRepository(db)
-	keyRepo := repository.NewAPIKeyRepository(db)
-	planRepo := repository.NewPlanRepository(db)
-	currencyRepo := repository.NewCurrencyRepository(db)
-	walletRepo := repository.NewWalletRepository(db)
-	logRepo := repository.NewRequestLogRepository(db)
-	notificationRepo := repository.NewNotificationRepository(db)
-	invoicingRepo := repository.NewInvoicingRepository(db)
-	customerRepo := repository.NewCustomerRepository(db)
-	invoicingHandler := handlers.NewInvoicingHandlerFull(invoicingRepo, webhookRepo, notificationRepo)
-	customerHandler := handlers.NewCustomerHandlerWithNotifications(customerRepo, notificationRepo)
-	webhookRepo := repository.NewWebhookRepository(db)
+keyRepo := repository.NewAPIKeyRepository(db)
+planRepo := repository.NewPlanRepository(db)
+currencyRepo := repository.NewCurrencyRepository(db)
+walletRepo := repository.NewWalletRepository(db)
+logRepo := repository.NewRequestLogRepository(db)
+
+notificationRepo := repository.NewNotificationRepository(db)
+
+invoicingRepo := repository.NewInvoicingRepository(db)
+customerRepo := repository.NewCustomerRepository(db)
+webhookRepo := repository.NewWebhookRepository(db)
 
 	authMiddleware := middleware.NewAuthMiddleware(&cfg.JWT, userRepo, keyRepo)
 
@@ -109,18 +109,33 @@ func main() {
 	}
 
 	authHandler := handlers.NewAuthHandler(userRepo, planRepo, &cfg.JWT)
-	currencyHandler := handlers.NewCurrencyHandler(currencyRepo)
-	phoneHandler := handlers.NewPhoneHandler()
-	smsHandler := handlers.NewSMSHandler()
-	walletHandler := handlers.NewWalletHandler(walletRepo)
-	paymentHandler := handlers.NewPaymentHandler()
-	analyticsHandler := handlers.NewAnalyticsHandler(logRepo)
-	adminHandler := handlers.NewAdminHandler(userRepo, keyRepo, logRepo)
-	billingHandler := handlers.NewBillingHandler(planRepo)
-	apiKeyHandler := handlers.NewAPIKeyHandler(keyRepo)
-	invoicingHandler := handlers.NewInvoicingHandlerWithWebhooks(invoicingRepo, webhookRepo)
-	webhookHandler := handlers.NewWebhookHandler(webhookRepo)
-	statsHandler := handlers.NewStatsHandler(invoicingRepo, logRepo)
+currencyHandler := handlers.NewCurrencyHandler(currencyRepo)
+phoneHandler := handlers.NewPhoneHandler()
+smsHandler := handlers.NewSMSHandler()
+walletHandler := handlers.NewWalletHandler(walletRepo)
+paymentHandler := handlers.NewPaymentHandler()
+analyticsHandler := handlers.NewAnalyticsHandler(logRepo)
+adminHandler := handlers.NewAdminHandler(userRepo, keyRepo, logRepo)
+billingHandler := handlers.NewBillingHandler(planRepo)
+apiKeyHandler := handlers.NewAPIKeyHandler(keyRepo)
+
+customerHandler := handlers.NewCustomerHandlerWithNotifications(
+	customerRepo,
+	notificationRepo,
+)
+
+notificationHandler := handlers.NewNotificationHandler(
+	notificationRepo,
+)
+
+invoicingHandler := handlers.NewInvoicingHandlerFull(
+	invoicingRepo,
+	webhookRepo,
+	notificationRepo,
+)
+
+webhookHandler := handlers.NewWebhookHandler(webhookRepo)
+statsHandler := handlers.NewStatsHandler(invoicingRepo, logRepo)
 
 	if cfg.Server.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
