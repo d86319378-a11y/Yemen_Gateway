@@ -5,11 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+interface InvoiceItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
 interface Invoice {
   id: string;
   customer_name: string;
   customer_phone?: string;
   customer_email?: string;
+  items: InvoiceItem[];
   amount: number;
   status: string;
   created_at: string;
@@ -32,6 +39,7 @@ export default function InvoicesPage() {
     customer_phone: '',
     customer_email: '',
     amount: 0,
+    items: [{ name: 'Item 1', quantity: 1, price: 0 }],
   });
 
   const fetchInvoices = async () => {
@@ -68,36 +76,25 @@ export default function InvoicesPage() {
     const token = localStorage.getItem('yg_token');
     if (!token) return;
 
-    const body = {
-      customer_name: form.customer_name,
-      customer_phone: form.customer_phone,
-      customer_email: form.customer_email,
-      currency: 'YER',
-      tax: 0,
-      discount: 0,
-      notes: '',
-      items: [
-        {
-          description: 'خدمة / منتج',
-          quantity: 1,
-          unit_price: Number(form.amount),
-        },
-      ],
-    };
-
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(form),
     });
 
     const data = await res.json();
     if (data.success) {
       setInvoices([...invoices, data.data]);
-      setForm({ customer_name: '', customer_phone: '', customer_email: '', amount: 0 });
+      setForm({
+        customer_name: '',
+        customer_phone: '',
+        customer_email: '',
+        amount: 0,
+        items: [{ name: 'Item 1', quantity: 1, price: 0 }],
+      });
       setSelectedCustomer('');
     } else {
       alert(data.error || 'فشل إنشاء الفاتورة');
@@ -188,6 +185,8 @@ export default function InvoicesPage() {
           />
         </div>
 
+        {/* Items can be edited here if needed */}
+
         <Button type="submit">إنشاء الفاتورة</Button>
       </form>
 
@@ -206,6 +205,12 @@ export default function InvoicesPage() {
               <p>البريد: {inv.customer_email}</p>
               <p>المبلغ: {inv.amount}</p>
               <p>الحالة: {inv.status}</p>
+              <p>بنود الفاتورة:</p>
+              <ul>
+                {inv.items.map((item, idx) => (
+                  <li key={idx}>{item.name} - {item.quantity} × {item.price}</li>
+                ))}
+              </ul>
             </div>
             <div className="flex gap-2">
               <Button onClick={() => alert('نافذة تعديل الفاتورة')}>تعديل</Button>
