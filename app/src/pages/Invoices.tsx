@@ -5,18 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface InvoiceItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
 interface Invoice {
   id: string;
   customer_name: string;
   customer_phone?: string;
   customer_email?: string;
-  items: InvoiceItem[];
   amount: number;
   status: string;
   created_at: string;
@@ -39,15 +32,17 @@ export default function InvoicesPage() {
     customer_phone: '',
     customer_email: '',
     amount: 0,
-    items: [{ name: 'Item 1', quantity: 1, price: 0 }],
   });
 
+  // الحصول على API Key تلقائيًا
+  const getApiKey = () => localStorage.getItem('yg_api_key') || '';
+
   const fetchInvoices = async () => {
-    const token = localStorage.getItem('yg_token');
+    const token = getApiKey();
     if (!token) return;
 
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, 'X-API-Key': token },
     });
 
     const data = await res.json();
@@ -55,11 +50,11 @@ export default function InvoicesPage() {
   };
 
   const fetchCustomers = async () => {
-    const token = localStorage.getItem('yg_token');
+    const token = getApiKey();
     if (!token) return;
 
     const res = await fetch(`${API_BASE_URL}/api/v1/customers`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, 'X-API-Key': token },
     });
 
     const data = await res.json();
@@ -73,28 +68,26 @@ export default function InvoicesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('yg_token');
+    const token = getApiKey();
     if (!token) return;
+
+    // التأكد من إضافة عنصر Items لحل مشكلة Validation
+    const payload = { ...form, items: [{ name: form.customer_name, amount: form.amount, quantity: 1 }] };
 
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        'X-API-Key': token,
       },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
     if (data.success) {
       setInvoices([...invoices, data.data]);
-      setForm({
-        customer_name: '',
-        customer_phone: '',
-        customer_email: '',
-        amount: 0,
-        items: [{ name: 'Item 1', quantity: 1, price: 0 }],
-      });
+      setForm({ customer_name: '', customer_phone: '', customer_email: '', amount: 0 });
       setSelectedCustomer('');
     } else {
       alert(data.error || 'فشل إنشاء الفاتورة');
@@ -102,12 +95,12 @@ export default function InvoicesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const token = localStorage.getItem('yg_token');
+    const token = getApiKey();
     if (!token) return;
 
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, 'X-API-Key': token },
     });
 
     const data = await res.json();
@@ -185,8 +178,6 @@ export default function InvoicesPage() {
           />
         </div>
 
-        {/* Items can be edited here if needed */}
-
         <Button type="submit">إنشاء الفاتورة</Button>
       </form>
 
@@ -205,12 +196,6 @@ export default function InvoicesPage() {
               <p>البريد: {inv.customer_email}</p>
               <p>المبلغ: {inv.amount}</p>
               <p>الحالة: {inv.status}</p>
-              <p>بنود الفاتورة:</p>
-              <ul>
-                {inv.items.map((item, idx) => (
-                  <li key={idx}>{item.name} - {item.quantity} × {item.price}</li>
-                ))}
-              </ul>
             </div>
             <div className="flex gap-2">
               <Button onClick={() => alert('نافذة تعديل الفاتورة')}>تعديل</Button>
