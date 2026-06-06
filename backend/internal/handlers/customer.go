@@ -11,12 +11,23 @@ import (
 )
 
 type CustomerHandler struct {
-	repo *repository.CustomerRepository
+	repo             *repository.CustomerRepository
+	notificationRepo *repository.NotificationRepository
 }
 
 func NewCustomerHandler(repo *repository.CustomerRepository) *CustomerHandler {
 	return &CustomerHandler{
 		repo: repo,
+	}
+}
+
+func NewCustomerHandlerWithNotifications(
+	repo *repository.CustomerRepository,
+	notificationRepo *repository.NotificationRepository,
+) *CustomerHandler {
+	return &CustomerHandler{
+		repo:             repo,
+		notificationRepo: notificationRepo,
 	}
 }
 
@@ -102,6 +113,17 @@ func (h *CustomerHandler) Create(c *gin.Context) {
 		return
 	}
 
+	if h.notificationRepo != nil {
+		_ = h.notificationRepo.Create(&domain.Notification{
+			ID:      uuid.New(),
+			UserID:  uid,
+			Title:   "تم إنشاء عميل جديد",
+			Message: customer.Name,
+			Type:    "customer_created",
+			Read:    false,
+		})
+	}
+
 	c.JSON(http.StatusCreated, domain.APIResponse{
 		Success: true,
 		Data:    customer,
@@ -161,6 +183,17 @@ func (h *CustomerHandler) Update(c *gin.Context) {
 		return
 	}
 
+	if h.notificationRepo != nil {
+		_ = h.notificationRepo.Create(&domain.Notification{
+			ID:      uuid.New(),
+			UserID:  uid,
+			Title:   "تم تعديل بيانات عميل",
+			Message: customer.Name,
+			Type:    "customer_updated",
+			Read:    false,
+		})
+	}
+
 	c.JSON(http.StatusOK, domain.APIResponse{
 		Success: true,
 		Data:    customer,
@@ -197,12 +230,25 @@ func (h *CustomerHandler) Delete(c *gin.Context) {
 		return
 	}
 
+	customerName := customer.Name
+
 	if err := h.repo.Delete(id); err != nil {
 		c.JSON(http.StatusInternalServerError, domain.APIResponse{
 			Success: false,
 			Error:   "failed to delete customer",
 		})
 		return
+	}
+
+	if h.notificationRepo != nil {
+		_ = h.notificationRepo.Create(&domain.Notification{
+			ID:      uuid.New(),
+			UserID:  uid,
+			Title:   "تم حذف عميل",
+			Message: customerName,
+			Type:    "customer_deleted",
+			Read:    false,
+		})
 	}
 
 	c.JSON(http.StatusOK, domain.APIResponse{
