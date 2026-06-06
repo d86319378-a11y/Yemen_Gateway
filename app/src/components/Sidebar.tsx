@@ -22,6 +22,7 @@ import {
   TrendingUp,
   Users,
   Terminal,
+  Bell,
 } from 'lucide-react';
 import type { User } from '@/types';
 
@@ -44,6 +45,7 @@ const menuItems = [
   { label: 'الاشتراك', href: '/billing', icon: CreditCard },
   { label: 'أسعار الصرف', href: '/exchange-rates', icon: DollarSign },
 { label: 'التحقق من الأرقام', href: '/phone-verify', icon: Phone },
+  { label: 'الإشعارات', href: '/notifications', icon: Bell },
   {
   label: 'سجلات API',
   href: '/api-logs',
