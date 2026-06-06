@@ -97,6 +97,7 @@ func main() {
 	notificationRepo := repository.NewNotificationRepository(db)
 	invoicingRepo := repository.NewInvoicingRepository(db)
 	customerRepo := repository.NewCustomerRepository(db)
+	notificationHandler := handlers.NewNotificationHandler(notificationRepo)
 	customerHandler := handlers.NewCustomerHandler(customerRepo)
 	webhookRepo := repository.NewWebhookRepository(db)
 
