@@ -98,7 +98,7 @@ func main() {
 	invoicingRepo := repository.NewInvoicingRepository(db)
 	customerRepo := repository.NewCustomerRepository(db)
 	invoicingHandler := handlers.NewInvoicingHandlerFull(invoicingRepo, webhookRepo, notificationRepo)
-	customerHandler := handlers.NewCustomerHandler(customerRepo)
+	customerHandler := handlers.NewCustomerHandlerWithNotifications(customerRepo, notificationRepo)
 	webhookRepo := repository.NewWebhookRepository(db)
 
 	authMiddleware := middleware.NewAuthMiddleware(&cfg.JWT, userRepo, keyRepo)
