@@ -34,29 +34,22 @@ export default function InvoicesPage() {
     amount: 0,
   });
 
-  // الحصول على API Key تلقائيًا
-  const getApiKey = () => localStorage.getItem('yg_api_key') || '';
+  const token = localStorage.getItem('yg_token');
 
   const fetchInvoices = async () => {
-    const token = getApiKey();
     if (!token) return;
-
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
-      headers: { Authorization: `Bearer ${token}`, 'X-API-Key': token },
+      headers: { Authorization: `Bearer ${token}` },
     });
-
     const data = await res.json();
     if (data.success) setInvoices(data.data);
   };
 
   const fetchCustomers = async () => {
-    const token = getApiKey();
     if (!token) return;
-
     const res = await fetch(`${API_BASE_URL}/api/v1/customers`, {
-      headers: { Authorization: `Bearer ${token}`, 'X-API-Key': token },
+      headers: { Authorization: `Bearer ${token}` },
     });
-
     const data = await res.json();
     if (data.success) setCustomers(data.data || []);
   };
@@ -66,22 +59,20 @@ export default function InvoicesPage() {
     fetchCustomers();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = getApiKey();
     if (!token) return;
 
-    // التأكد من إضافة عنصر Items لحل مشكلة Validation
-    const payload = { ...form, items: [{ name: form.customer_name, amount: form.amount, quantity: 1 }] };
+    // تحقق من وجود العميل المحدد
+    if (!selectedCustomer) {
+      alert('اختر العميل أولاً');
+      return;
+    }
 
     const res = await fetch(`${API_BASE_URL}/api/v1/invoices`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-        'X-API-Key': token,
-      },
-      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(form),
     });
 
     const data = await res.json();
@@ -90,92 +81,91 @@ export default function InvoicesPage() {
       setForm({ customer_name: '', customer_phone: '', customer_email: '', amount: 0 });
       setSelectedCustomer('');
     } else {
-      alert(data.error || 'فشل إنشاء الفاتورة');
+      alert(data.error || 'حدث خطأ عند إنشاء الفاتورة');
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const token = getApiKey();
+  const handleCreateCustomer = async (customerData: { name: string; phone?: string; email?: string }) => {
     if (!token) return;
 
-    const res = await fetch(`${API_BASE_URL}/api/v1/invoices/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}`, 'X-API-Key': token },
+    const res = await fetch(`${API_BASE_URL}/api/v1/customers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(customerData),
     });
-
     const data = await res.json();
     if (data.success) {
-      setInvoices(invoices.filter((inv) => inv.id !== id));
+      // أعد جلب العملاء
+      await fetchCustomers();
+      // حدد العميل الجديد مباشرة
+      setSelectedCustomer(data.data.id);
+      setForm({
+        ...form,
+        customer_name: data.data.name,
+        customer_phone: data.data.phone || '',
+        customer_email: data.data.email || '',
+      });
     }
   };
 
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">إنشاء فاتورة جديدة</h1>
-      <form onSubmit={handleSubmit} className="space-y-3 bg-white p-4 rounded shadow-sm">
-        <div>
-          <Label>اختر عميل</Label>
-          <Select
-            value={selectedCustomer}
-            onValueChange={(value) => {
-              setSelectedCustomer(value);
-              const customer = customers.find((c) => c.id === value);
-              if (customer) {
-                setForm({
-                  ...form,
-                  customer_name: customer.name || '',
-                  customer_phone: customer.phone || '',
-                  customer_email: customer.email || '',
-                });
-              }
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="اختر عميل محفوظ" />
-            </SelectTrigger>
-            <SelectContent>
-              {customers.map((customer) => (
-                <SelectItem key={customer.id} value={customer.id}>
-                  {customer.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
 
+      {/* اختيار العميل أو إنشاء جديد */}
+      <div className="space-y-3 bg-white p-4 rounded shadow-sm">
+        <Label>اختر عميل محفوظ أو أضف جديد</Label>
+        <Select
+          value={selectedCustomer}
+          onValueChange={(value) => {
+            setSelectedCustomer(value);
+            const customer = customers.find((c) => c.id === value);
+            if (customer) {
+              setForm({
+                ...form,
+                customer_name: customer.name || '',
+                customer_phone: customer.phone || '',
+                customer_email: customer.email || '',
+              });
+            }
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="اختر عميل محفوظ" />
+          </SelectTrigger>
+          <SelectContent>
+            {customers.map((customer) => (
+              <SelectItem key={customer.id} value={customer.id}>{customer.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button
+          onClick={() => {
+            const name = prompt('أدخل اسم العميل الجديد');
+            if (name) handleCreateCustomer({ name });
+          }}
+        >
+          إنشاء عميل جديد
+        </Button>
+      </div>
+
+      <form onSubmit={handleSubmitInvoice} className="space-y-3 bg-white p-4 rounded shadow-sm mt-4">
         <div>
           <Label>اسم العميل</Label>
-          <Input
-            value={form.customer_name}
-            onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
-            required
-          />
+          <Input value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} required />
         </div>
-
         <div>
           <Label>الهاتف</Label>
-          <Input
-            value={form.customer_phone}
-            onChange={(e) => setForm({ ...form, customer_phone: e.target.value })}
-          />
+          <Input value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} />
         </div>
-
         <div>
           <Label>البريد الإلكتروني</Label>
-          <Input
-            value={form.customer_email}
-            onChange={(e) => setForm({ ...form, customer_email: e.target.value })}
-          />
+          <Input value={form.customer_email} onChange={(e) => setForm({ ...form, customer_email: e.target.value })} />
         </div>
-
         <div>
           <Label>المبلغ</Label>
-          <Input
-            type="number"
-            value={form.amount}
-            onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) })}
-            required
-          />
+          <Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: parseFloat(e.target.value) })} required />
         </div>
 
         <Button type="submit">إنشاء الفاتورة</Button>
@@ -186,20 +176,13 @@ export default function InvoicesPage() {
       <h2 className="text-lg font-semibold mb-2">الفواتير الحالية</h2>
       <div className="space-y-2">
         {invoices.map((inv) => (
-          <div
-            key={inv.id}
-            className="border rounded p-3 flex justify-between items-center bg-white shadow-sm"
-          >
+          <div key={inv.id} className="border rounded p-3 flex justify-between items-center bg-white shadow-sm">
             <div>
               <p>العميل: {inv.customer_name}</p>
               <p>الهاتف: {inv.customer_phone}</p>
               <p>البريد: {inv.customer_email}</p>
               <p>المبلغ: {inv.amount}</p>
               <p>الحالة: {inv.status}</p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={() => alert('نافذة تعديل الفاتورة')}>تعديل</Button>
-              <Button variant="destructive" onClick={() => handleDelete(inv.id)}>حذف</Button>
             </div>
           </div>
         ))}
