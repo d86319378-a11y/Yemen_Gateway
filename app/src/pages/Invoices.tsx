@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router';
 import { API_BASE_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Link } from 'react-router';
 import {
   Select,
   SelectContent,
@@ -47,8 +47,7 @@ export default function InvoicesPage() {
   const getJwtToken = () =>
     localStorage.getItem('yg_token') || localStorage.getItem('auth_token') || '';
 
-  const getApiKey = () =>
-    localStorage.getItem('yg_api_key') || apiKey || '';
+  const getApiKey = () => localStorage.getItem('yg_api_key') || apiKey || '';
 
   const saveApiKey = () => {
     if (!apiKey.trim()) {
@@ -209,14 +208,6 @@ export default function InvoicesPage() {
         </p>
       </div>
 
-      <div className="flex gap-2 mt-2">
-  <Link to={`/invoices/${inv.id}`}>
-    <Button size="sm">
-      عرض
-    </Button>
-  </Link>
-</div>
-      
       <div className="bg-white border rounded p-4 space-y-3">
         <Label>API Key</Label>
         <div className="flex gap-2">
@@ -329,20 +320,25 @@ export default function InvoicesPage() {
           </div>
         ) : (
           invoices.map((inv) => (
-            <div
-              key={inv.id}
-              className="border rounded p-3 bg-white shadow-sm"
-            >
+            <div key={inv.id} className="border rounded p-3 bg-white shadow-sm">
               <p>رقم الفاتورة: {inv.number || inv.id}</p>
               <p>العميل: {inv.customer_name}</p>
               <p>الهاتف: {inv.customer_phone || '-'}</p>
               <p>البريد: {inv.customer_email || '-'}</p>
+
               <p>
                 المبلغ:{' '}
                 {Number(inv.total || inv.amount || 0).toLocaleString()}{' '}
                 {inv.currency || 'YER'}
               </p>
+
               <p>الحالة: {inv.status}</p>
+
+              <div className="flex gap-2 mt-3">
+                <Link to={`/invoices/${inv.id}`}>
+                  <Button size="sm">عرض / تعديل</Button>
+                </Link>
+              </div>
             </div>
           ))
         )}
