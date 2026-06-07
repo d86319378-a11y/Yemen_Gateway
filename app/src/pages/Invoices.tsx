@@ -3,6 +3,7 @@ import { API_BASE_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Link } from 'react-router';
 import {
   Select,
   SelectContent,
@@ -208,6 +209,14 @@ export default function InvoicesPage() {
         </p>
       </div>
 
+      <div className="flex gap-2 mt-2">
+  <Link to={`/invoices/${inv.id}`}>
+    <Button size="sm">
+      عرض
+    </Button>
+  </Link>
+</div>
+      
       <div className="bg-white border rounded p-4 space-y-3">
         <Label>API Key</Label>
         <div className="flex gap-2">
