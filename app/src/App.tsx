@@ -24,6 +24,7 @@ import PhoneVerifyPage from '@/pages/PhoneVerify';
 import APIPlaygroundPage from '@/pages/APIPlayground';
 import APILogsPage from '@/pages/APILogs';
 import NotificationsPage from '@/pages/Notifications';
+import InvoiceView from './pages/InvoiceView';
 
 function DashboardLayout({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
@@ -107,6 +108,17 @@ export default function App() {
           }
         />
 
+        <Route
+  path="/invoices/:id"
+  element={
+    <ProtectedRoute>
+      <DashboardLayout>
+        <InvoiceView />
+      </DashboardLayout>
+    </ProtectedRoute>
+  }
+/>
+        
         <Route
   path="/playground"
   element={
